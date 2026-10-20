@@ -1,0 +1,8 @@
+* text=auto
+*.sh text eol=lf
+*.tftpl text eol=lf
+*.tf text eol=lf
+*.py text eol=lf
+*.pdf binary
+*.png binary
+*.joblib binary
