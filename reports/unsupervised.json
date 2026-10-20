@@ -1,0 +1,141 @@
+{
+  "pca": {
+    "n_components_90pct": 26,
+    "total_features": 43,
+    "top_loadings": {
+      "PC1": [
+        "trm_ret_5d",
+        "usdcop_ret_5",
+        "trm_z20",
+        "usdmxn_ret_5",
+        "trm_ma_ratio"
+      ],
+      "PC2": [
+        "sp500_vol_20",
+        "us10y_vol_20",
+        "usdmxn_vol_20",
+        "trm_vol_20",
+        "brent_vol_20"
+      ]
+    }
+  },
+  "clustering": {
+    "kmeans": {
+      "k": 3,
+      "silhouette": 0.1222,
+      "davies_bouldin": 2.0752,
+      "silhouette_by_k": {
+        "3": 0.1222,
+        "4": 0.1156,
+        "5": 0.1124,
+        "6": 0.1131,
+        "7": 0.1092,
+        "8": 0.1098
+      }
+    },
+    "hierarchical": {
+      "k": 3,
+      "silhouette": 0.1165,
+      "davies_bouldin": 2.0348
+    },
+    "dbscan": {
+      "eps": 2.8938,
+      "min_samples": 18,
+      "clusters": 1,
+      "noise_days": 57,
+      "noise_share": 0.0264,
+      "noise_by_year": {
+        "2018": 4,
+        "2020": 45,
+        "2022": 4,
+        "2025": 4
+      },
+      "next_ret_std_noise_vs_rest": [
+        0.01377,
+        0.00794
+      ]
+    }
+  },
+  "association": {
+    "apriori": {
+      "frequent_itemsets": 498,
+      "rules_to_trm": 91
+    },
+    "fpgrowth": {
+      "frequent_itemsets": 498,
+      "rules_to_trm": 91
+    },
+    "top_rules": [
+      {
+        "antecedents": "usdbrl_up & usdmxn_up & vix_up",
+        "consequents": "TRM_next_up",
+        "support": 0.0523,
+        "confidence": 0.6011,
+        "lift": 1.2442
+      },
+      {
+        "antecedents": "brent_up & sp500_up & vix_down",
+        "consequents": "TRM_next_down",
+        "support": 0.0648,
+        "confidence": 0.6393,
+        "lift": 1.2367
+      },
+      {
+        "antecedents": "sp500_up & usdmxn_up",
+        "consequents": "TRM_next_down",
+        "support": 0.0509,
+        "confidence": 0.6358,
+        "lift": 1.2301
+      },
+      {
+        "antecedents": "brent_down & trm_vol_high",
+        "consequents": "TRM_next_up",
+        "support": 0.0579,
+        "confidence": 0.5924,
+        "lift": 1.2263
+      },
+      {
+        "antecedents": "dxy_up & sp500_down & vix_up",
+        "consequents": "TRM_next_up",
+        "support": 0.0648,
+        "confidence": 0.5882,
+        "lift": 1.2176
+      },
+      {
+        "antecedents": "brent_up & dxy_down",
+        "consequents": "TRM_next_down",
+        "support": 0.0736,
+        "confidence": 0.6285,
+        "lift": 1.2158
+      },
+      {
+        "antecedents": "usdmxn_up & vix_down",
+        "consequents": "TRM_next_down",
+        "support": 0.0547,
+        "confidence": 0.6243,
+        "lift": 1.2078
+      },
+      {
+        "antecedents": "brent_down & usdmxn_up",
+        "consequents": "TRM_next_up",
+        "support": 0.0746,
+        "confidence": 0.5791,
+        "lift": 1.1988
+      },
+      {
+        "antecedents": "brent_down & sp500_down & vix_up",
+        "consequents": "TRM_next_up",
+        "support": 0.0611,
+        "confidence": 0.5789,
+        "lift": 1.1984
+      },
+      {
+        "antecedents": "us10y_down & vix_down",
+        "consequents": "TRM_next_down",
+        "support": 0.0625,
+        "confidence": 0.6193,
+        "lift": 1.198
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "rows": 2159,
+  "period": [
+    "2017-09-07",
+    "2026-10-17"
+  ],
+  "share_up_days": 0.4831,
+  "ret_mean": 3.612525394718508e-05,
+  "ret_std": 0.008144606356520367,
+  "ret_skew": 0.5045851809258362,
+  "ret_kurtosis": 2.9922817906938723,
+  "jarque_bera_p": 1.5903684920051538e-195,
+  "ret_autocorr_lag1": 0.1659,
+  "top_corr_with_y_ret": {
+    "trm_ret_lag1": 0.166,
+    "brent_ret_1": 0.132,
+    "brent_ret_5": 0.1093,
+    "dxy_ret_1": 0.0904,
+    "sp500_ret_1": 0.0874,
+    "vix_ret_1": 0.0787,
+    "trm_z20": 0.0673,
+    "usdbrl_ret_1": 0.0603
+  }
+}

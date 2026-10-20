@@ -1,0 +1,11 @@
+antecedents,consequents,support,confidence,lift
+usdbrl_up & usdmxn_up & vix_up,TRM_next_up,0.0523,0.6011,1.2442
+brent_up & sp500_up & vix_down,TRM_next_down,0.0648,0.6393,1.2367
+sp500_up & usdmxn_up,TRM_next_down,0.0509,0.6358,1.2301
+brent_down & trm_vol_high,TRM_next_up,0.0579,0.5924,1.2263
+dxy_up & sp500_down & vix_up,TRM_next_up,0.0648,0.5882,1.2176
+brent_up & dxy_down,TRM_next_down,0.0736,0.6285,1.2158
+usdmxn_up & vix_down,TRM_next_down,0.0547,0.6243,1.2078
+brent_down & usdmxn_up,TRM_next_up,0.0746,0.5791,1.1988
+brent_down & sp500_down & vix_up,TRM_next_up,0.0611,0.5789,1.1984
+us10y_down & vix_down,TRM_next_down,0.0625,0.6193,1.198

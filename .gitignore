@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+build/
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*
+infra/terraform/terraform.tfvars
+data/raw/news/headlines_*.json
+*.aux
+*.log
+*.out

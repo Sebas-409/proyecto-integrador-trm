@@ -1,0 +1,7 @@
+model,search,cv_score,fit_seconds,test_auc,test_acc,test_f1
+logistic,grid,0.599,0.78,0.5494,0.7755,0.0
+knn,grid,0.5967,0.68,0.5713,0.7755,0.0
+svm,grid,0.5945,7.47,0.5617,0.7731,0.0
+random_forest,random,0.6227,71.96,0.5854,0.7731,0.0577
+adaboost,grid,0.6003,49.06,0.5571,0.7755,0.0
+gradient_boosting,random,0.6148,69.52,0.5858,0.7731,0.0392

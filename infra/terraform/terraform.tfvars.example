@@ -1,0 +1,19 @@
+# Copiar como terraform.tfvars y ajustar.
+
+project     = "trm-predict"
+environment = "dev"
+region      = "us-east-1"
+
+# AWS Academy Learner Lab (no permite crear roles IAM):
+# lab_role_name        = "LabRole"
+# lab_instance_profile = "LabInstanceProfile"
+# enable_budget        = false
+
+asg_min     = 1
+asg_desired = 2
+asg_max     = 4
+
+db_multi_az = false # true para la demo de alta disponibilidad (duplica el costo de RDS)
+
+alert_email        = ""
+monthly_budget_usd = 30

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 730" width="1400" height="730" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3b4250"/>
+    </marker>
+    <marker id="ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b5341f"/>
+    </marker>
+    <style>
+      .t { font-size: 14px; font-weight: 600; fill: #14181f; }
+      .s { font-size: 11.5px; fill: #4a5361; }
+      .lbl { font-size: 11px; fill: #3b4250; }
+      .grp { font-size: 13px; font-weight: 700; }
+      .e { stroke: #3b4250; stroke-width: 1.6; fill: none; marker-end: url(#a); }
+      .ed { stroke: #b5341f; stroke-width: 1.6; fill: none; stroke-dasharray: 6 4; marker-end: url(#ad); }
+      .node { fill: #ffffff; stroke-width: 2; rx: 8; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="730" fill="#ffffff"/>
+
+  <!-- Fuentes externas -->
+  <rect x="16" y="40" width="210" height="330" rx="10" fill="#f4f5f7" stroke="#9aa3b0" stroke-dasharray="5 4"/>
+  <text x="30" y="64" class="grp" fill="#3b4250">Fuentes externas</text>
+  <rect x="30" y="80" width="182" height="58" class="node" stroke="#6b7280"/>
+  <text x="42" y="104" class="t">datos.gov.co</text><text x="42" y="123" class="s">API Socrata: TRM oficial (JSON)</text>
+  <rect x="30" y="148" width="182" height="58" class="node" stroke="#6b7280"/>
+  <text x="42" y="172" class="t">Yahoo Finance</text><text x="42" y="191" class="s">Brent, DXY, VIX, USD/COP…</text>
+  <rect x="30" y="216" width="182" height="58" class="node" stroke="#6b7280"/>
+  <text x="42" y="240" class="t">Binance API</text><text x="42" y="259" class="s">BTC, ETH (velas diarias)</text>
+  <rect x="30" y="284" width="182" height="72" class="node" stroke="#6b7280"/>
+  <text x="42" y="308" class="t">La República</text><text x="42" y="327" class="s">Web scraping de titulares</text><text x="42" y="344" class="s">→ sentimiento cambiario</text>
+
+  <!-- Usuarios -->
+  <rect x="30" y="470" width="182" height="78" class="node" stroke="#1f4e8c"/>
+  <text x="42" y="496" class="t">Usuarios</text><text x="42" y="515" class="s">Hogares con remesas,</text><text x="42" y="532" class="s">mipymes importadoras</text>
+
+  <!-- Nube AWS -->
+  <rect x="250" y="16" width="880" height="700" rx="12" fill="none" stroke="#232f3e" stroke-width="2"/>
+  <text x="266" y="40" class="grp" fill="#232f3e">AWS Cloud · us-east-1 (desplegado con Terraform)</text>
+
+  <!-- Carril serverless -->
+  <rect x="280" y="66" width="150" height="66" class="node" stroke="#e7157b"/>
+  <text x="292" y="92" class="t">EventBridge</text><text x="292" y="111" class="s">cron L-V 6:30 p. m.</text>
+  <rect x="480" y="66" width="160" height="66" class="node" stroke="#ed7100"/>
+  <text x="492" y="92" class="t">Lambda ingest</text><text x="492" y="111" class="s">FaaS · APIs + scraping</text>
+  <rect x="690" y="56" width="200" height="120" class="node" stroke="#7aa116"/>
+  <text x="702" y="82" class="t">S3 Data Lake</text>
+  <text x="702" y="102" class="s">data/raw/daily/*.json</text><text x="702" y="119" class="s">data/processed/</text><text x="702" y="136" class="s">models/model.joblib</text>
+  <text x="702" y="160" class="s">versionado · SSE · ciclo de vida</text>
+  <rect x="940" y="66" width="170" height="80" class="node" stroke="#01a88d"/>
+  <text x="952" y="92" class="t">Entrenamiento ML</text><text x="952" y="111" class="s">scikit-learn, SHAP, LIME</text><text x="952" y="128" class="s">local / notebook</text>
+
+  <path d="M430 99 L480 99" class="e"/>
+  <path d="M226 200 C 420 200, 560 190, 560 134" class="e"/>
+  <text x="300" y="192" class="lbl">HTTPS (JSON / HTML)</text>
+  <path d="M640 99 L690 99" class="e"/>
+  <text x="646" y="90" class="lbl">PUT</text>
+  <path d="M940 95 L890 95" class="e"/>
+  <text x="896" y="86" class="lbl">modelo</text>
+  <path d="M890 125 L940 125" class="e"/>
+  <text x="898" y="140" class="lbl">datos</text>
+
+  <!-- VPC -->
+  <rect x="270" y="200" width="840" height="500" rx="10" fill="#f7f4ff" stroke="#8c4fff" stroke-width="1.6"/>
+  <text x="286" y="224" class="grp" fill="#5b2fc2">VPC 10.20.0.0/16 · 2 zonas de disponibilidad</text>
+
+  <!-- Subredes públicas -->
+  <rect x="290" y="240" width="800" height="250" rx="8" fill="#eef7ea" stroke="#7aa116" stroke-dasharray="4 3"/>
+  <text x="304" y="262" class="grp" fill="#4b6b0f">Subredes públicas (AZ-a, AZ-b)</text>
+  <rect x="310" y="330" width="170" height="80" class="node" stroke="#8c4fff"/>
+  <text x="322" y="356" class="t">App Load Balancer</text><text x="322" y="375" class="s">HTTP :80 · health /health</text><text x="322" y="392" class="s">alta disponibilidad</text>
+
+  <rect x="530" y="276" width="380" height="196" rx="8" fill="#fff7ef" stroke="#ed7100" stroke-dasharray="6 4"/>
+  <text x="544" y="298" class="grp" fill="#b45309">Auto Scaling Group (1–4) · CPU 60 %</text>
+  <rect x="548" y="316" width="160" height="136" class="node" stroke="#ed7100"/>
+  <text x="560" y="342" class="t">EC2 · AZ-a</text><text x="560" y="361" class="s">Docker: FastAPI</text><text x="560" y="378" class="s">/api/predict</text><text x="560" y="395" class="s">/api/scenario</text><text x="560" y="412" class="s">tablero web</text>
+  <rect x="730" y="316" width="160" height="136" class="node" stroke="#ed7100"/>
+  <text x="742" y="342" class="t">EC2 · AZ-b</text><text x="742" y="361" class="s">Docker: FastAPI</text><text x="742" y="378" class="s">misma imagen ECR</text><text x="742" y="395" class="s">IMDSv2</text>
+
+  <rect x="935" y="330" width="140" height="70" class="node" stroke="#7aa116"/>
+  <text x="947" y="356" class="t">S3 Gateway</text><text x="947" y="374" class="s">Endpoint (gratis,</text><text x="947" y="390" class="s">sin NAT)</text>
+
+  <!-- Subredes privadas -->
+  <rect x="290" y="510" width="800" height="175" rx="8" fill="#eef3fb" stroke="#1f6fd1" stroke-dasharray="4 3"/>
+  <text x="304" y="532" class="grp" fill="#1f4e8c">Subredes privadas (sin salida a Internet)</text>
+  <rect x="310" y="560" width="190" height="90" class="node" stroke="#ed7100"/>
+  <text x="322" y="586" class="t">Lambda ETL</text><text x="322" y="605" class="s">disparada por evento S3</text><text x="322" y="622" class="s">UPSERT idempotente</text>
+  <rect x="560" y="560" width="200" height="110" class="node" stroke="#2e73b8"/>
+  <text x="572" y="586" class="t">RDS PostgreSQL 16</text><text x="572" y="605" class="s">principal · AZ-a</text><text x="572" y="622" class="s">trm, market, predictions,</text><text x="572" y="639" class="s">news_sentiment</text><text x="572" y="656" class="s">backups 7 días · PITR</text>
+  <rect x="800" y="560" width="200" height="110" class="node" stroke="#2e73b8" stroke-dasharray="5 3"/>
+  <text x="812" y="586" class="t">RDS standby · AZ-b</text><text x="812" y="605" class="s">Multi-AZ (opcional)</text><text x="812" y="622" class="s">réplica síncrona,</text><text x="812" y="639" class="s">failover automático</text>
+  <path d="M760 615 L800 615" class="e"/>
+
+  <!-- Flujos -->
+  <path d="M212 509 C 260 509, 270 370, 310 370" class="e"/>
+  <text x="236" y="455" class="lbl">HTTP</text>
+  <path d="M480 370 L548 370" class="e"/>
+  <path d="M480 392 H 518 V 462 H 810 V 452" class="e"/>
+  <path d="M790 176 L790 316" class="e"/>
+  <text x="796" y="230" class="lbl">carga modelo (vía endpoint)</text>
+  <path d="M628 452 L640 560" class="e"/>
+  <text x="640" y="500" class="lbl">SQL</text>
+  <path d="M690 160 H 280 V 605 H 310" class="e"/>
+  <text x="480" y="154" class="lbl">evento S3:ObjectCreated → Lambda ETL</text>
+  <path d="M500 605 L560 605" class="e"/>
+
+  <!-- Servicios de soporte -->
+  <rect x="1150" y="40" width="234" height="420" rx="10" fill="#f4f5f7" stroke="#9aa3b0"/>
+  <text x="1164" y="64" class="grp" fill="#3b4250">Servicios de soporte</text>
+  <rect x="1164" y="80" width="206" height="56" class="node" stroke="#ed7100"/>
+  <text x="1176" y="104" class="t">Amazon ECR</text><text x="1176" y="122" class="s">imagen Docker de la API</text>
+  <rect x="1164" y="146" width="206" height="56" class="node" stroke="#e7157b"/>
+  <text x="1176" y="170" class="t">SSM Parameter Store</text><text x="1176" y="188" class="s">contraseña de BD cifrada</text>
+  <rect x="1164" y="212" width="206" height="72" class="node" stroke="#e7157b"/>
+  <text x="1176" y="236" class="t">CloudWatch + SNS</text><text x="1176" y="254" class="s">dashboard, logs, alarmas</text><text x="1176" y="271" class="s">5xx, hosts no sanos, errores</text>
+  <rect x="1164" y="294" width="206" height="56" class="node" stroke="#7aa116"/>
+  <text x="1176" y="318" class="t">AWS Budgets</text><text x="1176" y="336" class="s">alertas al 50/80/100 %</text>
+  <rect x="1164" y="360" width="206" height="84" class="node" stroke="#dd344c"/>
+  <text x="1176" y="384" class="t">IAM</text><text x="1176" y="402" class="s">mínimo privilegio</text><text x="1176" y="419" class="s">(LabRole en AWS Academy)</text>
+
+  <!-- DR -->
+  <rect x="1150" y="500" width="234" height="210" rx="10" fill="#fdf1ef" stroke="#b5341f" stroke-dasharray="6 4"/>
+  <text x="1164" y="524" class="grp" fill="#b5341f">Región DR · us-west-2</text>
+  <rect x="1164" y="540" width="206" height="66" class="node" stroke="#7aa116"/>
+  <text x="1176" y="564" class="t">S3 réplica (CRR)</text><text x="1176" y="583" class="s">datos + modelos, Standard-IA</text>
+  <text x="1164" y="630" class="s">RPO ≈ 24 h (datos diarios)</text>
+  <text x="1164" y="648" class="s">RTO &lt; 1 h: terraform apply</text>
+  <text x="1164" y="666" class="s">con region = us-west-2 y</text>
+  <text x="1164" y="684" class="s">restauración de snapshot RDS</text>
+  <path d="M890 165 H 1120 V 573 H 1164" class="ed"/>
+  <text x="1124" y="560" class="lbl" fill="#b5341f">CRR</text>
+</svg>

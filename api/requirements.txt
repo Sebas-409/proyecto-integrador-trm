@@ -1,0 +1,8 @@
+fastapi==0.156.1
+uvicorn==0.54.0
+pandas==3.0.6
+numpy>=2.1
+scikit-learn==1.9.1
+joblib==1.6.0
+boto3>=1.35
+pg8000==1.31.5

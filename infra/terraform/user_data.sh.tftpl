@@ -1,0 +1,16 @@
+#!/bin/bash
+# Arranque de cada instancia de la API: instala Docker, descarga la imagen de ECR y la ejecuta.
+set -euxo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+
+aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${split("/", ecr_repo)[0]}
+
+DB_PASSWORD=$(aws ssm get-parameter --region ${region} --name "${db_password}" --with-decryption --query Parameter.Value --output text)
+
+docker run -d --restart always --name api -p 8000:8000 \
+  -e AWS_DEFAULT_REGION=${region} \
+  -e DATA_BUCKET=${bucket} \
+  -e DATABASE_URL="postgresql://${db_user}:$DB_PASSWORD@${db_host}:5432/${db_name}" \
+  ${ecr_repo}:${image_tag}

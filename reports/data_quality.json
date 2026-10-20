@@ -1,0 +1,79 @@
+{
+  "trm": {
+    "rows": 8370,
+    "from": "1991-12-02",
+    "to": "2026-10-20",
+    "min": 620.62,
+    "max": 5061.21
+  },
+  "brent": {
+    "rows": 4786,
+    "from": "2007-07-30",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 61
+  },
+  "dxy": {
+    "rows": 4983,
+    "from": "2007-01-02",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 16
+  },
+  "us10y": {
+    "rows": 4979,
+    "from": "2007-01-03",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 44
+  },
+  "vix": {
+    "rows": 4983,
+    "from": "2007-01-03",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 44
+  },
+  "sp500": {
+    "rows": 4981,
+    "from": "2007-01-03",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 99
+  },
+  "usdmxn": {
+    "rows": 5156,
+    "from": "2007-01-01",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 41
+  },
+  "usdbrl": {
+    "rows": 5128,
+    "from": "2007-01-01",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 38
+  },
+  "usdcop": {
+    "rows": 5144,
+    "from": "2007-01-01",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 82
+  },
+  "btc": {
+    "rows": 3352,
+    "from": "2017-08-17",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 63
+  },
+  "eth": {
+    "rows": 3352,
+    "from": "2017-08-17",
+    "to": "2026-10-20",
+    "nonpositive": 0,
+    "outlier_returns_iqr3": 48
+  }
+}
