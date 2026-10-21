@@ -1,0 +1,48 @@
+{
+  "probes": 955,
+  "ok": 743,
+  "failed": 212,
+  "availability_pct": 77.801,
+  "latency_ms_p50": 190.4,
+  "latency_ms_p95": 210.0,
+  "terminated_at_s": 30.2,
+  "recovered_at_s": null,
+  "time_to_full_capacity_s": null,
+  "instances_seen": [
+    "5d1fd5a44139",
+    "ea37bfc9ca08"
+  ],
+  "events": [
+    {
+      "t": 0,
+      "event": "start",
+      "healthy": [
+        "i-061a819b5a0232b99"
+      ]
+    },
+    {
+      "t": 30.2,
+      "event": "terminate",
+      "instance": "i-061a819b5a0232b99"
+    },
+    {
+      "t": 30.2,
+      "event": "healthy_changed",
+      "healthy": [
+        "i-061a819b5a0232b99"
+      ]
+    },
+    {
+      "t": 35.8,
+      "event": "healthy_changed",
+      "healthy": []
+    },
+    {
+      "t": 169.0,
+      "event": "healthy_changed",
+      "healthy": [
+        "i-00ee93a222c94a043"
+      ]
+    }
+  ]
+}

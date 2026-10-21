@@ -1,0 +1,59 @@
+{
+  "random_forest": {
+    "brier": 0.24741900634046818,
+    "brier_baseline_tasa_base": 0.249206638989186,
+    "simulacion_remesas": {
+      "modelo_p>0.50": {
+        "dias_espera": 220,
+        "ganancia_cop_por_1000usd_dia": 382.5154675991828
+      },
+      "modelo_p>0.55": {
+        "dias_espera": 95,
+        "ganancia_cop_por_1000usd_dia": 624.1184522214502
+      },
+      "modelo_p>0.60": {
+        "dias_espera": 31,
+        "ganancia_cop_por_1000usd_dia": -78.1320613648163
+      },
+      "aleatorio_media_1000_sim": {
+        "ganancia_cop_por_1000usd_dia": -1383.330623343665
+      },
+      "oraculo": {
+        "ganancia_cop_por_1000usd_dia": 9994.086990080988
+      }
+    }
+  },
+  "gradient_boosting": {
+    "brier": 0.250530684755964,
+    "brier_baseline_tasa_base": 0.249206638989186,
+    "simulacion_remesas": {
+      "modelo_p>0.50": {
+        "dias_espera": 244,
+        "ganancia_cop_por_1000usd_dia": 494.93477073499986
+      },
+      "modelo_p>0.55": {
+        "dias_espera": 175,
+        "ganancia_cop_por_1000usd_dia": 1831.7180872331537
+      },
+      "modelo_p>0.60": {
+        "dias_espera": 109,
+        "ganancia_cop_por_1000usd_dia": 369.5958602435108
+      },
+      "aleatorio_media_1000_sim": {
+        "ganancia_cop_por_1000usd_dia": -1383.330623343665
+      },
+      "oraculo": {
+        "ganancia_cop_por_1000usd_dia": 9994.086990080988
+      }
+    }
+  },
+  "risk_alert": {
+    "model": "random_forest",
+    "prob_threshold": 0.3213,
+    "alert_rate": 0.19212962962962962,
+    "base_rate": 0.22453703703703703,
+    "precision": 0.30120481927710846,
+    "recall": 0.25773195876288657,
+    "lift_precision_vs_base": 1.3414482672959882
+  }
+}

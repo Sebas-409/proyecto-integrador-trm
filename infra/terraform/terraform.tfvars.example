@@ -9,7 +9,7 @@ region      = "us-east-1"
 # lab_instance_profile = "LabInstanceProfile"
 # enable_budget        = false
 
-asg_min     = 1
+asg_min     = 2
 asg_desired = 2
 asg_max     = 4
 

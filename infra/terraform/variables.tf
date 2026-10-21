@@ -44,8 +44,9 @@ variable "instance_type" {
 }
 
 variable "asg_min" {
-  type    = number
-  default = 1
+  description = "Mínimo 2 (una instancia por AZ): con 1, el scale-in deja un único punto de falla."
+  type        = number
+  default     = 2
 }
 
 variable "asg_desired" {

@@ -1,0 +1,62 @@
+{
+  "probes": 378,
+  "ok": 378,
+  "failed": 0,
+  "availability_pct": 100.0,
+  "latency_ms_p50": 191.4,
+  "latency_ms_p95": 214.6,
+  "terminated_at_s": 30.1,
+  "recovered_at_s": 169.1,
+  "time_to_full_capacity_s": 139.0,
+  "instances_seen": [
+    "a52860544765",
+    "c7b0b71c9228",
+    "ea37bfc9ca08"
+  ],
+  "events": [
+    {
+      "t": 0,
+      "event": "start",
+      "healthy": [
+        "i-00ee93a222c94a043",
+        "i-0c4c6b0ee0dd59122"
+      ]
+    },
+    {
+      "t": 30.1,
+      "event": "terminate",
+      "instance": "i-00ee93a222c94a043"
+    },
+    {
+      "t": 30.1,
+      "event": "healthy_changed",
+      "healthy": [
+        "i-00ee93a222c94a043",
+        "i-0c4c6b0ee0dd59122"
+      ]
+    },
+    {
+      "t": 35.7,
+      "event": "healthy_changed",
+      "healthy": [
+        "i-0c4c6b0ee0dd59122"
+      ]
+    },
+    {
+      "t": 169.1,
+      "event": "healthy_changed",
+      "healthy": [
+        "i-056659967c075dfd7",
+        "i-0c4c6b0ee0dd59122"
+      ]
+    },
+    {
+      "t": 169.1,
+      "event": "recovered",
+      "healthy": [
+        "i-056659967c075dfd7",
+        "i-0c4c6b0ee0dd59122"
+      ]
+    }
+  ]
+}

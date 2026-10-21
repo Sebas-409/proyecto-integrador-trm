@@ -1,0 +1,50 @@
+{
+  "threads": 16,
+  "minutes": 14.0,
+  "total_requests": 4543,
+  "total_errors": 0,
+  "max_desired": 4,
+  "max_healthy": 4,
+  "scaling_activities": [
+    {
+      "time": "2026-10-21T01:09:54.236000+00:00",
+      "description": "Launching a new EC2 instance: i-0c8a60632c8ee54cf"
+    },
+    {
+      "time": "2026-10-21T01:09:54.230000+00:00",
+      "description": "Launching a new EC2 instance: i-0831be7f202a1dcea"
+    },
+    {
+      "time": "2026-10-21T01:00:41.441000+00:00",
+      "description": "Launching a new EC2 instance: i-056659967c075dfd7"
+    },
+    {
+      "time": "2026-10-21T01:00:31.360000+00:00",
+      "description": "Terminating EC2 instance: i-00ee93a222c94a043"
+    },
+    {
+      "time": "2026-10-21T00:57:39.718000+00:00",
+      "description": "Launching a new EC2 instance: i-0c4c6b0ee0dd59122"
+    },
+    {
+      "time": "2026-10-21T00:49:39.390000+00:00",
+      "description": "Launching a new EC2 instance: i-00ee93a222c94a043"
+    },
+    {
+      "time": "2026-10-21T00:49:30.126000+00:00",
+      "description": "Terminating EC2 instance: i-061a819b5a0232b99"
+    },
+    {
+      "time": "2026-10-21T00:45:13.771000+00:00",
+      "description": "Terminating EC2 instance: i-03a1c0e8aa8724c5e"
+    },
+    {
+      "time": "2026-10-21T00:32:25.884000+00:00",
+      "description": "Launching a new EC2 instance: i-061a819b5a0232b99"
+    },
+    {
+      "time": "2026-10-21T00:32:25.582000+00:00",
+      "description": "Launching a new EC2 instance: i-03a1c0e8aa8724c5e"
+    }
+  ]
+}
