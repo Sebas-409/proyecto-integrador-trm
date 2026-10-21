@@ -26,12 +26,16 @@ def handler(event, context):
     since = "2017-01-01" if backfill else (date.today() - timedelta(days=45)).isoformat()
 
     bundle = {"run_date": date.today().isoformat(), "backfill": backfill, "trm": fetch_trm(since), "markets": {}}
-    for name, sym in YAHOO.items():
-        bundle["markets"][name] = [r for r in fetch_yahoo(sym, start=since)]
-    for name, sym in BINANCE.items():
-        bundle["markets"][name] = fetch_binance(sym, start=since)
-
     errors = []
+    # Si una fuente de mercado falla, se registra y se sigue con las demás (la TRM sí es obligatoria).
+    sources = [(n, lambda s=s: fetch_yahoo(s, start=since)) for n, s in YAHOO.items()]
+    sources += [(n, lambda s=s: fetch_binance(s, start=since)) for n, s in BINANCE.items()]
+    for name, fetch in sources:
+        try:
+            bundle["markets"][name] = fetch()
+        except Exception as err:
+            errors.append(f"{name}: {err}")
+
     try:
         headlines = scrape_headlines(NEWS)
         bundle["sentiment"] = sentiment_score(headlines)

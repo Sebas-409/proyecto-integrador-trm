@@ -5,7 +5,12 @@ set -euxo pipefail
 dnf install -y docker
 systemctl enable --now docker
 
-aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${split("/", ecr_repo)[0]}
+# En el primer despliegue la imagen puede subirse a ECR después de crear el ASG: reintentar hasta 30 min.
+for i in $(seq 1 60); do
+  aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${split("/", ecr_repo)[0]} \
+    && docker pull ${ecr_repo}:${image_tag} && break
+  sleep 30
+done
 
 DB_PASSWORD=$(aws ssm get-parameter --region ${region} --name "${db_password}" --with-decryption --query Parameter.Value --output text)
 

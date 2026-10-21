@@ -49,7 +49,8 @@ def fetch_yahoo(symbol: str, start: str = "2007-01-01") -> list[dict]:
 
 def fetch_binance(symbol: str, start: str = "2017-08-17", limit_days: int | None = None) -> list[dict]:
     """Velas diarias paginadas (1000 por petición)."""
-    base = "https://api.binance.com/api/v3/klines"
+    # Espejo público de datos de mercado: api.binance.com responde 451 a IPs de EE. UU. (p. ej. AWS us-east-1).
+    base = "https://data-api.binance.vision/api/v3/klines"
     start_ms = int(datetime.fromisoformat(start).replace(tzinfo=timezone.utc).timestamp() * 1000)
     out = []
     while True:
