@@ -1,0 +1,173 @@
+{
+  "variables": [
+    "trm_vol_20",
+    "trm_ret_5d",
+    "vix_ret_5",
+    "dxy_ret_5",
+    "brent_ret_5",
+    "btc_ret_5",
+    "brent_vol_20",
+    "btc_vol_20",
+    "sp500_vol_20"
+  ],
+  "observaciones": 2159,
+  "k_codo": 4,
+  "metricas_k_codo": {
+    "inercia": 13835.6248,
+    "silhouette": 0.1156,
+    "davies_bouldin": 1.9146,
+    "calinski_harabasz": 290.5091
+  },
+  "curva": [
+    {
+      "k": 1,
+      "inercia": 19431.0,
+      "silhouette": NaN,
+      "davies_bouldin": NaN,
+      "calinski_harabasz": NaN,
+      "caida_pct": NaN
+    },
+    {
+      "k": 2,
+      "inercia": 16962.7802,
+      "silhouette": 0.2165,
+      "davies_bouldin": 2.2741,
+      "calinski_harabasz": 313.8642,
+      "caida_pct": 12.7025
+    },
+    {
+      "k": 3,
+      "inercia": 15159.8398,
+      "silhouette": 0.1222,
+      "davies_bouldin": 2.0752,
+      "calinski_harabasz": 303.7215,
+      "caida_pct": 10.6288
+    },
+    {
+      "k": 4,
+      "inercia": 13835.6248,
+      "silhouette": 0.1156,
+      "davies_bouldin": 1.9146,
+      "calinski_harabasz": 290.5091,
+      "caida_pct": 8.735
+    },
+    {
+      "k": 5,
+      "inercia": 12945.4494,
+      "silhouette": 0.1124,
+      "davies_bouldin": 1.8817,
+      "calinski_harabasz": 269.7847,
+      "caida_pct": 6.4339
+    },
+    {
+      "k": 6,
+      "inercia": 12217.2893,
+      "silhouette": 0.1131,
+      "davies_bouldin": 1.7981,
+      "calinski_harabasz": 254.2482,
+      "caida_pct": 5.6248
+    },
+    {
+      "k": 7,
+      "inercia": 11611.5211,
+      "silhouette": 0.1092,
+      "davies_bouldin": 1.8006,
+      "calinski_harabasz": 241.5348,
+      "caida_pct": 4.9583
+    },
+    {
+      "k": 8,
+      "inercia": 11147.3839,
+      "silhouette": 0.1098,
+      "davies_bouldin": 1.7891,
+      "calinski_harabasz": 228.3439,
+      "caida_pct": 3.9972
+    },
+    {
+      "k": 9,
+      "inercia": 10741.8485,
+      "silhouette": 0.1074,
+      "davies_bouldin": 1.802,
+      "calinski_harabasz": 217.3936,
+      "caida_pct": 3.6379
+    },
+    {
+      "k": 10,
+      "inercia": 10405.7601,
+      "silhouette": 0.1065,
+      "davies_bouldin": 1.7361,
+      "calinski_harabasz": 207.0994,
+      "caida_pct": 3.1288
+    }
+  ],
+  "perfil": [
+    {
+      "cluster": 0,
+      "dias": 752,
+      "pct_alza_siguiente": 0.50798,
+      "std_ret_siguiente": 0.00634,
+      "trm_vol_20": 0.00566,
+      "trm_ret_5d": 0.00083,
+      "vix_ret_5": -0.01773,
+      "dxy_ret_5": 0.00095,
+      "brent_ret_5": 0.01062,
+      "btc_ret_5": 0.029,
+      "brent_vol_20": 0.01571,
+      "btc_vol_20": 0.03855,
+      "sp500_vol_20": 0.00726,
+      "pct_dias": 0.34831,
+      "regimen": "Calma"
+    },
+    {
+      "cluster": 1,
+      "dias": 754,
+      "pct_alza_siguiente": 0.43767,
+      "std_ret_siguiente": 0.0084,
+      "trm_vol_20": 0.00847,
+      "trm_ret_5d": -0.01403,
+      "vix_ret_5": -0.07427,
+      "dxy_ret_5": -0.00488,
+      "brent_ret_5": 0.01596,
+      "btc_ret_5": 0.00995,
+      "brent_vol_20": 0.02507,
+      "btc_vol_20": 0.0253,
+      "sp500_vol_20": 0.01045,
+      "pct_dias": 0.34924,
+      "regimen": "Apetito por riesgo (peso se aprecia)"
+    },
+    {
+      "cluster": 2,
+      "dias": 606,
+      "pct_alza_siguiente": 0.5132,
+      "std_ret_siguiente": 0.00903,
+      "trm_vol_20": 0.00829,
+      "trm_ret_5d": 0.01622,
+      "vix_ret_5": 0.12447,
+      "dxy_ret_5": 0.00556,
+      "brent_ret_5": -0.02329,
+      "btc_ret_5": -0.02978,
+      "brent_vol_20": 0.02244,
+      "btc_vol_20": 0.02792,
+      "sp500_vol_20": 0.01009,
+      "pct_dias": 0.28069,
+      "regimen": "Aversión al riesgo (dólar sube)"
+    },
+    {
+      "cluster": 3,
+      "dias": 47,
+      "pct_alza_siguiente": 0.42553,
+      "std_ret_siguiente": 0.01466,
+      "trm_vol_20": 0.01564,
+      "trm_ret_5d": 0.01135,
+      "vix_ret_5": -0.0032,
+      "dxy_ret_5": 0.00302,
+      "brent_ret_5": -0.05249,
+      "btc_ret_5": -0.002,
+      "brent_vol_20": 0.08543,
+      "btc_vol_20": 0.06493,
+      "sp500_vol_20": 0.0392,
+      "pct_dias": 0.02177,
+      "regimen": "Crisis / alta volatilidad"
+    }
+  ]
+}

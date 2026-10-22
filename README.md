@@ -32,6 +32,7 @@ python -m src.ingest.run              # 1. Adquisición (JSON/CSV en data/raw, t
 python -m src.pipeline.prepare        # 2. Limpieza, integración y variables -> data/processed/dataset.csv
 python -m src.pipeline.eda            # 3. EDA -> reports/eda_*.json, reports/figures/eda_*.png
 python -m src.pipeline.unsupervised   # 4. PCA, K-Means, jerárquico, DBSCAN, Apriori y FP-Growth
+python -m src.pipeline.elbow          # 4b. K-Means con k elegido por el método del codo -> reports/elbow.json
 python -m src.pipeline.train          # 5. Modelos, Grid/Random Search, SHAP, LIME -> models/model.joblib
 
 uvicorn api.app:app --port 8000       # API + tablero en http://localhost:8000
