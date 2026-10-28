@@ -28,6 +28,15 @@
   input { width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:14px; }
   button { margin-top:12px; padding:9px 14px; border:0; border-radius:6px; background:var(--accent); color:#fff; font-size:14px; cursor:pointer; }
   small { color:var(--muted); }
+  #chat-log { display:flex; flex-direction:column; gap:8px; margin:12px 0; max-height:420px; overflow-y:auto; }
+  #chat-log:empty { display:none; }
+  .msg { padding:9px 12px; border-radius:8px; font-size:14px; line-height:1.5; white-space:pre-wrap; max-width:85%; }
+  .msg.user { align-self:flex-end; background:var(--accent); color:#fff; }
+  .msg.assistant { align-self:flex-start; background:var(--bg); border:1px solid var(--line); }
+  .msg.error { align-self:flex-start; color:var(--up); background:none; padding-left:0; }
+  #chat-form { display:flex; gap:8px; margin-top:8px; }
+  #chat-form button { margin-top:0; flex:none; }
+  #chat-form button:disabled { opacity:.6; cursor:wait; }
   @media (max-width: 800px) { .kpi { grid-column: span 6; } .chart, .side { grid-column: span 12; } main, header { padding-left:16px; padding-right:16px; } }
 </style>
 </head>
@@ -37,7 +46,7 @@
   <p>Probabilidad de que la TRM suba en el siguiente día hábil. Sistema académico de apoyo a decisiones; no es una recomendación de inversión.</p>
 </header>
 <main>
-  <div class="card kpi"><div class="label">TRM vigente</div><div class="value" id="k-trm">–</div><small id="k-date"></small></div>
+  <div class="card kpi"><div class="label">TRM oficial vigente</div><div class="value" id="k-trm">–</div><small id="k-date"></small></div>
   <div class="card kpi"><div class="label">Prob. de alza</div><div class="value" id="k-prob">–</div><small id="k-dir"></small></div>
   <div class="card kpi"><div class="label">TRM esperada</div><div class="value" id="k-exp">–</div><small id="k-ret"></small></div>
   <div class="card kpi"><div class="label">Riesgo de movimiento fuerte</div><div class="value" id="k-risk">–</div><small id="k-risk-thr"></small></div>
@@ -54,6 +63,16 @@
     <button id="b-sim">Simular</button>
     <p id="sim-out"></p>
   </div>
+
+  <div class="card full">
+    <h2>Pregúntale al asistente</h2>
+    <small>Responde con los datos del modelo de hoy. Ej.: «¿Por qué el modelo cree que la TRM sube?» o «¿Qué es la TRM?»</small>
+    <div id="chat-log" aria-live="polite"></div>
+    <form id="chat-form">
+      <input id="chat-in" maxlength="2000" placeholder="Escribe tu pregunta…" autocomplete="off" aria-label="Pregunta">
+      <button id="chat-send">Enviar</button>
+    </form>
+  </div>
 </main>
 <script>
 const fmt = (n, d=2) => n.toLocaleString("es-CO", {minimumFractionDigits:d, maximumFractionDigits:d});
@@ -62,7 +81,7 @@ async function j(url, opts) { const r = await fetch(url, opts); if (!r.ok) throw
 async function load() {
   const [p, h, m, hc] = await Promise.all([j("/api/predict"), j("/api/history"), j("/api/model"), j("/health")]);
   document.getElementById("k-trm").textContent = "$" + fmt(p.trm_base);
-  document.getElementById("k-date").textContent = "vigente desde " + p.base_date;
+  document.getElementById("k-date").textContent = "Superfinanciera · " + p.base_date + " · no es el dólar spot";
   const prob = document.getElementById("k-prob");
   prob.textContent = fmt(p.prob_up * 100, 1) + " %";
   prob.className = "value " + (p.prob_up >= 0.5 ? "up" : "down");
@@ -97,6 +116,34 @@ document.getElementById("b-sim").onclick = async () => {
   const s = await j("/api/scenario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shocks }) });
   document.getElementById("sim-out").innerHTML =
     `Probabilidad de alza: <b>${fmt(s.base.prob_up*100,1)} %</b> → <b class="${s.scenario.prob_up>=.5?'up':'down'}">${fmt(s.scenario.prob_up*100,1)} %</b>. TRM esperada: $${fmt(s.scenario.trm_expected)}`;
+};
+
+const chat = [];
+function addMsg(role, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  div.textContent = text;
+  const log = document.getElementById("chat-log");
+  log.appendChild(div); log.scrollTop = log.scrollHeight;
+}
+document.getElementById("chat-form").onsubmit = async (ev) => {
+  ev.preventDefault();
+  const input = document.getElementById("chat-in"), btn = document.getElementById("chat-send");
+  const q = input.value.trim();
+  if (!q || btn.disabled) return;
+  input.value = ""; btn.disabled = true; btn.textContent = "Pensando…";
+  chat.push({ role: "user", content: q }); addMsg("user", q);
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chat.slice(-12) }) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || "Error del asistente");
+    chat.push({ role: "assistant", content: data.reply }); addMsg("assistant", data.reply);
+  } catch (e) {
+    chat.pop(); addMsg("error", e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Enviar"; input.focus();
+  }
 };
 
 load().catch(e => { document.querySelector("header p").textContent = "Error cargando datos: " + e.message; });

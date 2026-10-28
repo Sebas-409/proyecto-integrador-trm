@@ -10,13 +10,14 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlparse
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.config import BINANCE_SYMBOLS, MODELS, YAHOO_SYMBOLS
 from src.pipeline.prepare import load_market, load_trm, make_features
@@ -152,6 +153,106 @@ def history(days: int = 180):
 def model_info():
     bundle, _ = state()
     return bundle["meta"]
+
+
+# ---------------- Asistente (Claude) ----------------
+
+CHAT_MODEL = "claude-opus-5-5"
+CHAT_LIMIT_PER_HOUR = 30  # por IP y por instancia: la clave paga cada pregunta
+_chat = {"client": None, "hits": {}}
+
+CHAT_SYSTEM = """Eres el asistente de TRM Predict, un proyecto académico de la Universidad Santo Tomás Tunja \
+que pronostica la TRM (tasa representativa del mercado COP/USD) del siguiente día hábil.
+
+Responde en español, claro y breve (máximo 3 párrafos cortos), en texto plano: la página no interpreta \
+Markdown, así que no uses asteriscos, almohadillas ni tablas. Usa solo los datos del contexto que te dan; \
+si algo no está ahí, dilo en lugar de inventarlo. No des recomendaciones de inversión personalizadas: \
+puedes explicar qué indica el modelo y qué suelen hacer importadores y exportadores, aclarando que es un \
+sistema académico de apoyo a decisiones.
+
+Conceptos que debes tener claros:
+- La TRM es la tasa oficial que certifica la Superintendencia Financiera para cada día (fuente: datos.gov.co). \
+Es un solo valor por día y no es el dólar spot que se ve en Google o en casas de cambio, que cambia todo el día.
+- Modelos: clasificador (probabilidad de que la TRM suba), regresor (retorno esperado) y modelo de riesgo \
+(probabilidad de un movimiento fuerte). Usan retornos y volatilidades de la TRM, petróleo Brent, índice \
+dólar DXY, Tesoro de EE. UU. a 10 años, VIX, S&P 500, peso mexicano, real brasileño, Bitcoin y Ether.
+- Regímenes de mercado (K-Means, k=4 por el método del codo, 2.159 días de 2017 a 2026): Calma (35 % de los días), \
+Apetito por riesgo con peso que se aprecia (35 %), Aversión al riesgo con dólar que sube (28 %) y Crisis / alta \
+volatilidad (2 %, marzo a mayo de 2020 por el COVID-19)."""
+
+
+def chat_client():
+    if _chat["client"] is None:
+        import anthropic
+
+        key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not key and BUCKET:  # en AWS la clave vive cifrada en SSM, no en la imagen
+            import boto3
+
+            try:
+                key = boto3.client("ssm").get_parameter(
+                    Name=os.getenv("ANTHROPIC_KEY_PARAM", "/trm-predict/dev/anthropic_api_key"),
+                    WithDecryption=True)["Parameter"]["Value"]
+            except Exception as err:
+                print(f"No se pudo leer la clave del asistente: {err}")
+        if not key:
+            raise HTTPException(503, "El asistente no está configurado")
+        _chat["client"] = anthropic.Anthropic(api_key=key, timeout=60.0)
+    return _chat["client"]
+
+
+def chat_context() -> str:
+    bundle, feats = state()
+    p = predict_row(feats.tail(1), bundle)
+    meta = bundle["meta"]
+    h = feats.tail(20)[["date", "trm"]]
+    serie = ", ".join(f"{d:%Y-%m-%d}: {v:.2f}" for d, v in zip(h.date, h.trm))
+    return (f"Pronóstico actual: {p}\n"
+            f"Métricas de prueba: {meta.get('test_metrics')}\n"
+            f"Variables más influyentes (SHAP): {meta.get('shap_top10')}\n"
+            f"Datos de entrenamiento hasta: {meta.get('data_until')}\n"
+            f"TRM oficial de los últimos 20 días hábiles: {serie}")
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class ChatBody(BaseModel):
+    messages: list[ChatTurn] = Field(min_length=1, max_length=12)
+
+
+@app.post("/api/chat")
+def chat(body: ChatBody, request: Request):
+    import anthropic
+
+    if body.messages[-1].role != "user":
+        raise HTTPException(400, "El último mensaje debe ser del usuario")
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "").split(",")[0]
+    now = time.time()
+    hits = [t for t in _chat["hits"].get(ip, []) if now - t < 3600]
+    if len(hits) >= CHAT_LIMIT_PER_HOUR:
+        raise HTTPException(429, "Límite de preguntas por hora alcanzado; intenta más tarde")
+    _chat["hits"][ip] = hits + [now]
+
+    msgs = [m.model_dump() for m in body.messages]
+    msgs[0]["content"] = f"<contexto>\n{chat_context()}\n</contexto>\n\n{msgs[0]['content']}"
+    try:
+        r = chat_client().beta.messages.create(
+            model=CHAT_MODEL, max_tokens=2000, system=CHAT_SYSTEM, messages=msgs,
+            output_config={"effort": "low"},
+            betas=["server-side-fallback-2026-07-01"], fallbacks="default")
+    except anthropic.RateLimitError:
+        raise HTTPException(429, "El asistente está ocupado; intenta en un minuto")
+    except anthropic.APIStatusError as err:
+        print(f"Error de Claude {err.status_code}: {err.message}")
+        raise HTTPException(502, "El asistente no respondió")
+    except anthropic.APIConnectionError:
+        raise HTTPException(502, "No se pudo contactar al asistente")
+    if r.stop_reason == "refusal":
+        return {"reply": "No puedo responder esa pregunta. Pregúntame sobre la TRM o el modelo."}
+    return {"reply": "".join(b.text for b in r.content if b.type == "text").strip()}
 
 
 @app.get("/")

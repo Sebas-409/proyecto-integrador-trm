@@ -48,3 +48,15 @@ resource "aws_ssm_parameter" "db_password" {
   type  = "SecureString"
   value = random_password.db.result
 }
+
+# Clave de Claude para el asistente de la API. Terraform crea el parámetro con un valor de relleno;
+# la clave real se carga a mano (aws ssm put-parameter --overwrite) para que nunca quede en el estado ni en git.
+resource "aws_ssm_parameter" "anthropic_api_key" {
+  name  = "/${var.project}/${var.environment}/anthropic_api_key"
+  type  = "SecureString"
+  value = "cargar-a-mano"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}

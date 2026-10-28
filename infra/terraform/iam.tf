@@ -48,7 +48,8 @@ resource "aws_iam_role_policy" "api" {
     Statement = [
       { Effect = "Allow", Action = ["s3:GetObject", "s3:ListBucket"],
       Resource = [aws_s3_bucket.data.arn, "${aws_s3_bucket.data.arn}/*"] },
-      { Effect = "Allow", Action = ["ssm:GetParameter"], Resource = aws_ssm_parameter.db_password.arn }
+      { Effect = "Allow", Action = ["ssm:GetParameter"],
+      Resource = [aws_ssm_parameter.db_password.arn, aws_ssm_parameter.anthropic_api_key.arn] }
     ]
   })
 }
