@@ -1,0 +1,137 @@
+{
+  "fase2": {
+    "nulos": 0,
+    "atipicos_recortados_p1_p99": {
+      "trm_vol_20": 44,
+      "trm_ret_5d": 44,
+      "vix_ret_5": 44,
+      "dxy_ret_5": 44,
+      "brent_ret_5": 44,
+      "btc_ret_5": 44,
+      "brent_vol_20": 44,
+      "btc_vol_20": 44,
+      "sp500_vol_20": 44
+    },
+    "max_corr_abs": {
+      "par": [
+        "brent_vol_20",
+        "sp500_vol_20"
+      ],
+      "valor": 0.626
+    },
+    "pares_corr_mayor_0_7": 0
+  },
+  "fase4": {
+    "init": "k-means++",
+    "n_init": 10,
+    "k": 4,
+    "centroides_originales": [
+      {
+        "regimen": "Calma",
+        "trm_vol_20": 0.00566,
+        "trm_ret_5d": 0.00079,
+        "vix_ret_5": -0.017,
+        "dxy_ret_5": 0.00095,
+        "brent_ret_5": 0.01053,
+        "btc_ret_5": 0.02863,
+        "brent_vol_20": 0.01573,
+        "btc_vol_20": 0.03855,
+        "sp500_vol_20": 0.00728
+      },
+      {
+        "regimen": "Apetito por riesgo (peso se aprecia)",
+        "trm_vol_20": 0.00847,
+        "trm_ret_5d": -0.01387,
+        "vix_ret_5": -0.07255,
+        "dxy_ret_5": -0.00471,
+        "brent_ret_5": 0.01576,
+        "btc_ret_5": 0.01005,
+        "brent_vol_20": 0.02507,
+        "btc_vol_20": 0.02532,
+        "sp500_vol_20": 0.01045
+      },
+      {
+        "regimen": "Aversión al riesgo (dólar sube)",
+        "trm_vol_20": 0.00828,
+        "trm_ret_5d": 0.01602,
+        "vix_ret_5": 0.11712,
+        "dxy_ret_5": 0.00545,
+        "brent_ret_5": -0.02337,
+        "btc_ret_5": -0.02861,
+        "brent_vol_20": 0.02241,
+        "btc_vol_20": 0.02794,
+        "sp500_vol_20": 0.01008
+      },
+      {
+        "regimen": "Crisis / alta volatilidad",
+        "trm_vol_20": 0.01337,
+        "trm_ret_5d": 0.0057,
+        "vix_ret_5": -0.0067,
+        "dxy_ret_5": 0.00202,
+        "brent_ret_5": -0.03458,
+        "btc_ret_5": 0.01447,
+        "brent_vol_20": 0.08224,
+        "btc_vol_20": 0.05143,
+        "sp500_vol_20": 0.03107
+      }
+    ]
+  },
+  "fase5": {
+    "silhouette_global": 0.1156,
+    "silhouette_datos_barajados": 0.0988,
+    "silhouette_por_cluster": [
+      {
+        "cluster": 0,
+        "silhouette_media": 0.154,
+        "pct_negativos": 0.0
+      },
+      {
+        "cluster": 1,
+        "silhouette_media": 0.1015,
+        "pct_negativos": 0.0836
+      },
+      {
+        "cluster": 2,
+        "silhouette_media": 0.0792,
+        "pct_negativos": 0.2145
+      },
+      {
+        "cluster": 3,
+        "silhouette_media": 0.1983,
+        "pct_negativos": 0.0
+      }
+    ],
+    "ari_semillas": {
+      "media": 0.927,
+      "min": 0.651
+    },
+    "ari_bootstrap_80": {
+      "media": 0.8113,
+      "min": 0.6407
+    },
+    "chi2_alza_siguiente": {
+      "chi2": 10.92,
+      "p": 0.01217
+    },
+    "chi2_dia_semana": {
+      "chi2": 5.548,
+      "p": 0.93715
+    },
+    "kruskal_abs_ret_siguiente": {
+      "H": 61.467,
+      "p": 2.86e-13
+    },
+    "duracion_media_dias": {
+      "0": 6.6,
+      "1": 5.63,
+      "2": 3.88,
+      "3": 47.0
+    },
+    "prob_seguir_manana": {
+      "0": 0.848,
+      "1": 0.823,
+      "2": 0.743,
+      "3": 0.979
+    }
+  }
+}

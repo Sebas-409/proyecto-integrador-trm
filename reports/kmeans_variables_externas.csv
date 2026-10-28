@@ -1,0 +1,5 @@
+regimen,y_ret,us10y_ret_5,usdmxn_ret_5,usdbrl_ret_5,eth_vol_20,spot_gap,abs_ret_siguiente
+Apetito por riesgo (peso se aprecia),-0.00065,0.00183,-0.00734,-0.008,0.03524,0.0006,0.00634
+Aversión al riesgo (dólar sube),0.00072,-0.00103,0.00802,0.0089,0.03833,-0.00193,0.00693
+Calma,0.00017,0.00687,-1e-05,0.00207,0.04767,-0.00185,0.00493
+Crisis / alta volatilidad,0.00012,-0.04207,0.02166,0.02753,0.08133,-0.00314,0.011

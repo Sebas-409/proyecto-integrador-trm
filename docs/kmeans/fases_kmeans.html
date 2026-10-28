@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>TRM Predict · K-Means por fases</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #1a1a1a; }
+  h1 { font-size: 19pt; margin: 0 0 2px; color: #0b3d91; }
+  .sub { color: #555; margin: 0 0 14px; }
+  h2 { font-size: 13.5pt; color: #0b3d91; border-bottom: 2px solid #0b3d91; padding-bottom: 2px; margin: 20px 0 8px; break-after: avoid; }
+  h3 { font-size: 11pt; margin: 12px 0 4px; break-after: avoid; }
+  p, li { margin: 4px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9pt; break-inside: avoid; }
+  th, td { border: 1px solid #c8d0dc; padding: 3px 6px; text-align: left; vertical-align: top; }
+  th { background: #e9eef7; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  figure { margin: 8px 0 12px; text-align: center; break-inside: avoid; }
+  figure img { max-width: 100%; max-height: 82mm; }
+  figcaption { font-size: 8.5pt; color: #555; }
+  .box { background: #f3f6fb; border-left: 4px solid #0b3d91; padding: 6px 10px; margin: 8px 0; break-inside: avoid; }
+  code { font-size: 9pt; background: #f1f1f1; padding: 0 3px; }
+</style>
+</head>
+<body>
+
+<h1>TRM Predict · Aplicación de K-Means por fases</h1>
+<p class="sub">Proyecto integrador V semestre · Universidad Santo Tomás Tunja · Regímenes del mercado cambiario COP/USD<br>
+Código: <code>src/pipeline/elbow.py</code> (elección de k) y <code>src/pipeline/kmeans_validation.py</code> (validación). Resultados en <code>reports/</code>.</p>
+
+<h2>Fase 1 · Definir el problema y comprender el negocio</h2>
+<p><b>Objetivo analítico.</b> Segmentar los días de mercado en <i>regímenes</i>, es decir, en estados del entorno financiero que se comportan parecido: volatilidad de la TRM, su tendencia a 5 días y lo que hacen sus referentes (VIX, índice dólar DXY, Brent, Bitcoin y S&amp;P 500).</p>
+<p><b>Cómo genera valor.</b> Una empresa con exposición al dólar (importador, exportador, tesorería) no decide igual en calma que en crisis. Saber en qué régimen está el mercado hoy indica cuánto cubrirse, con qué instrumento y qué tan confiable es el pronóstico del modelo predictivo del proyecto.</p>
+<p><b>Por qué K-Means (no supervisado).</b> Nadie etiqueta los días como «crisis» o «calma»: no existe una variable objetivo para entrenar un clasificador. Los regímenes deben <i>descubrirse</i> en los datos. K-Means es simple, rápido con 2.159 observaciones, sus centroides se leen directamente como «el día típico» de cada régimen y permite asignar un día nuevo al régimen más cercano, que es lo que necesita la aplicación en la nube.</p>
+
+<h2>Fase 2 · Preparar y explorar los datos (EDA)</h2>
+<p><b>Datos.</b> 2.159 días hábiles entre el 7-sep-2017 y el 17-oct-2026 (TRM oficial + mercados de Yahoo Finance).</p>
+<h3>Selección de variables</h3>
+<table>
+<tr><th>Usadas (9)</th><th>Descartadas y por qué</th></tr>
+<tr><td><code>trm_vol_20</code>, <code>trm_ret_5d</code>, <code>vix_ret_5</code>, <code>dxy_ret_5</code>, <code>brent_ret_5</code>, <code>btc_ret_5</code>, <code>brent_vol_20</code>, <code>btc_vol_20</code>, <code>sp500_vol_20</code></td>
+<td>Fecha (identificador); nivel de la TRM (no estacionario: agruparía por época, no por comportamiento); <code>y_ret</code>/<code>y_up</code> (lo que se quiere predecir: usarlas sería fuga de información); día de la semana y mes (calendario, no mercado); USD/MXN, USD/BRL, tasas a 10 años y el spot COP (se reservan como variables externas para validar en la Fase 5).</td></tr>
+</table>
+<h3>Valores nulos y atípicos</h3>
+<ul>
+<li><b>Nulos:</b> 0 en las 9 variables de régimen del dataset procesado.</li>
+<li><b>Atípicos:</b> cada variable se recorta al percentil 1–99 (44 días por variable, ≈2 %). Sin el recorte, los días de marzo de 2020 dominan las distancias y K-Means con k=2 solo separa esos ~30 días. Se recortan, no se borran: el día sigue en el análisis con un valor extremo acotado.</li>
+<li><b>Correlación:</b> la mayor es 0,63 (volatilidad del Brent con la del S&amp;P 500); ningún par supera 0,7, así que no hay variables redundantes que dupliquen su peso en la distancia.</li>
+</ul>
+<h3>Estandarización</h3>
+<p>Las volatilidades rondan 0,005–0,08 y los retornos del VIX llegan a ±0,3. Como K-Means usa distancia euclidiana, se aplica <code>StandardScaler</code> (media 0, varianza 1) para que todas pesen igual.</p>
+<figure><img src="../../reports/figures/kmeans_corr_variables.png"><figcaption>Correlación entre las 9 variables de régimen.</figcaption></figure>
+
+<h2>Fase 3 · Elegir el número óptimo de clústeres (k)</h2>
+<p>Se entrenó K-Means con k = 1…10. El codo se ubica de forma objetiva con el criterio de máxima distancia a la cuerda (idea del algoritmo Kneedle) y da <b>k = 4</b>.</p>
+<table>
+<tr><th>k</th><th>Inercia</th><th>Caída de inercia</th><th>Silhouette</th><th>Davies-Bouldin ↓</th><th>Calinski-Harabasz ↑</th></tr>
+<tr><td>2</td><td class="n">16.963</td><td class="n">12,7 %</td><td class="n">0,217</td><td class="n">2,27</td><td class="n">314</td></tr>
+<tr><td>3</td><td class="n">15.160</td><td class="n">10,6 %</td><td class="n">0,122</td><td class="n">2,08</td><td class="n">304</td></tr>
+<tr><th>4</th><th class="n">13.836</th><th class="n">8,7 %</th><th class="n">0,116</th><th class="n">1,91</th><th class="n">291</th></tr>
+<tr><td>5</td><td class="n">12.945</td><td class="n">6,4 %</td><td class="n">0,112</td><td class="n">1,88</td><td class="n">270</td></tr>
+<tr><td>6</td><td class="n">12.217</td><td class="n">5,6 %</td><td class="n">0,113</td><td class="n">1,80</td><td class="n">254</td></tr>
+</table>
+<div class="box"><b>¿Por qué 4 y no 2, si la silueta de k=2 es mayor?</b> (1) A partir de k=4 la ganancia de cada clúster adicional cae por debajo del 7 %: ese es el codo. (2) Entre k=3 y k=6 la silueta es prácticamente plana (0,11–0,12), así que pasar de 3 a 4 no empeora la cohesión, y Davies-Bouldin sí mejora (2,27 → 1,91). (3) Para el negocio, dos grupos no alcanzan: la decisión de cobertura cambia según si el dólar sube, si baja, si el mercado está quieto o si está en crisis. Son cuatro decisiones distintas.</div>
+<figure><img src="../../reports/figures/codo_kmeans.png"><figcaption>Curva del codo (inercia) y silhouette por k.</figcaption></figure>
+
+<h2>Fase 4 · Entrenar y ejecutar el modelo</h2>
+<ul>
+<li><b>Inicialización:</b> <code>KMeans(n_clusters=4, init="k-means++", n_init=10, random_state=42)</code>. k-means++ separa los centroides iniciales y se toman 10 arranques, de los que queda el de menor inercia.</li>
+<li><b>Centroides en escala original:</b> como los datos se estandarizaron, los centroides se devuelven a sus unidades con <code>scaler.inverse_transform</code> (<code>reports/kmeans_centroides_originales.csv</code>).</li>
+</ul>
+<table>
+<tr><th>Régimen</th><th>Vol. TRM 20 d</th><th>TRM 5 d</th><th>VIX 5 d</th><th>DXY 5 d</th><th>Brent 5 d</th><th>BTC 5 d</th><th>Vol. Brent</th><th>Vol. BTC</th><th>Vol. S&amp;P</th></tr>
+<tr><td>0 · Calma</td><td class="n">0,57 %</td><td class="n">+0,08 %</td><td class="n">−1,7 %</td><td class="n">+0,10 %</td><td class="n">+1,1 %</td><td class="n">+2,9 %</td><td class="n">1,6 %</td><td class="n">3,9 %</td><td class="n">0,73 %</td></tr>
+<tr><td>1 · Apetito por riesgo</td><td class="n">0,85 %</td><td class="n">−1,39 %</td><td class="n">−7,3 %</td><td class="n">−0,47 %</td><td class="n">+1,6 %</td><td class="n">+1,0 %</td><td class="n">2,5 %</td><td class="n">2,5 %</td><td class="n">1,05 %</td></tr>
+<tr><td>2 · Aversión al riesgo</td><td class="n">0,83 %</td><td class="n">+1,60 %</td><td class="n">+11,7 %</td><td class="n">+0,55 %</td><td class="n">−2,3 %</td><td class="n">−2,9 %</td><td class="n">2,2 %</td><td class="n">2,8 %</td><td class="n">1,01 %</td></tr>
+<tr><td>3 · Crisis</td><td class="n">1,34 %</td><td class="n">+0,57 %</td><td class="n">−0,7 %</td><td class="n">+0,20 %</td><td class="n">−3,5 %</td><td class="n">+1,4 %</td><td class="n">8,2 %</td><td class="n">5,1 %</td><td class="n">3,11 %</td></tr>
+</table>
+<figure><img src="../../reports/figures/codo_centroides.png"><figcaption>Centroides en unidades estandarizadas (z): qué distingue a cada régimen.</figcaption></figure>
+
+<h2>Fase 5 · Evaluar y validar los clústeres</h2>
+<h3>Validación interna</h3>
+<table>
+<tr><th>Prueba</th><th>Resultado</th><th>Lectura</th></tr>
+<tr><td>Silhouette global</td><td class="n">0,116</td><td rowspan="2">Baja, pero por encima de unos datos con las mismas variables barajadas (sin estructura conjunta). Los regímenes de mercado son un continuo (de la calma se pasa poco a poco al estrés), así que no hay fronteras nítidas: la cohesión es moderada.</td></tr>
+<tr><td>Silhouette con datos barajados</td><td class="n">0,099</td></tr>
+<tr><td>Silhouette por clúster</td><td>Crisis 0,20 · Calma 0,15 · Apetito 0,10 · Aversión 0,08</td><td>Crisis y Calma son los grupos más claros y no tienen días mal asignados (0 % de silhouette negativa). Aversión al riesgo es el más difuso (21 % negativos): comparte frontera con los demás.</td></tr>
+<tr><td>Estabilidad con 20 semillas (ARI)</td><td>media 0,93 · mín 0,65</td><td>Casi siempre aparece la misma partición: los grupos no son un accidente de la inicialización.</td></tr>
+<tr><td>Bootstrap (entrenar con el 80 %)</td><td>ARI media 0,81</td><td>Con otra muestra de días, la asignación se mantiene en su mayoría.</td></tr>
+<tr><td>Persistencia (probabilidad de seguir en el régimen al día siguiente)</td><td>Calma 0,85 · Apetito 0,82 · Aversión 0,74 · Crisis 0,98</td><td>El régimen dura varios días (3,9 a 47 en promedio). K-Means no recibió la fecha, así que esta continuidad en el tiempo es una señal de que capta estados reales del mercado.</td></tr>
+</table>
+<h3>Análisis complementario: variables que el modelo no vio</h3>
+<table>
+<tr><th>Variable externa</th><th>Calma</th><th>Apetito</th><th>Aversión</th><th>Crisis</th><th>Prueba</th></tr>
+<tr><td>% días en que la TRM sube al día siguiente</td><td class="n">50,8 %</td><td class="n">43,8 %</td><td class="n">51,3 %</td><td class="n">42,6 %</td><td>χ² = 10,9 · p = 0,012</td></tr>
+<tr><td>Movimiento absoluto de la TRM al día siguiente</td><td class="n">0,49 %</td><td class="n">0,63 %</td><td class="n">0,69 %</td><td class="n">1,10 %</td><td>Kruskal-Wallis · p &lt; 10⁻¹²</td></tr>
+<tr><td>USD/MXN a 5 días</td><td class="n">0,0 %</td><td class="n">−0,7 %</td><td class="n">+0,8 %</td><td class="n">+2,2 %</td><td rowspan="2">Los pares emergentes se mueven igual que el peso colombiano en cada régimen</td></tr>
+<tr><td>USD/BRL a 5 días</td><td class="n">+0,2 %</td><td class="n">−0,8 %</td><td class="n">+0,9 %</td><td class="n">+2,8 %</td></tr>
+<tr><td>Tasa del Tesoro a 10 años, 5 días</td><td class="n">+0,7 %</td><td class="n">+0,2 %</td><td class="n">−0,1 %</td><td class="n">−4,2 %</td><td>En la crisis los inversionistas se refugian en bonos</td></tr>
+<tr><td>Día de la semana</td><td colspan="4">Sin diferencia</td><td>χ² = 5,5 · p = 0,94</td></tr>
+</table>
+<ul>
+<li><b>Crisis</b> corresponde a 47 días consecutivos entre el 10 de marzo y el 19 de mayo de 2020 (choque del COVID-19). El modelo lo encontró sin conocer la fecha.</li>
+<li>2022 y 2023 casi no tuvieron días de calma (6 % y 5 %), lo que coincide con el ciclo de subidas de tasas y la incertidumbre electoral en Colombia. 2026 va con un 59 % de días en Apetito por riesgo.</li>
+<li>Que los regímenes no dependan del día de la semana es lo esperado: describen el mercado, no el calendario.</li>
+</ul>
+<div class="box"><b>Pregunta clave: ¿tienen sentido estadístico y para el negocio?</b> Sí, con matices. Estadísticamente, la separación es moderada (silhouette baja), pero los grupos son estables y persistentes, y difieren de forma significativa en variables que el modelo nunca vio. Para el negocio, cada régimen tiene una lectura económica clara y cambia lo que conviene hacer con la cobertura cambiaria.</div>
+<figure><img src="../../reports/figures/kmeans_validacion.png"><figcaption>Silhouette de cada día agrupado por régimen, y proporción de días por régimen en cada año.</figcaption></figure>
+<figure><img src="../../reports/figures/codo_clusters.png"><figcaption>Regímenes en el plano PCA y sobre la serie de la TRM.</figcaption></figure>
+
+<h2>Fase 6 · Interpretar y contar la historia de negocio</h2>
+<table>
+<tr><th>Régimen</th><th>% días</th><th>Perfil</th><th>Acción sugerida</th></tr>
+<tr><td><b>Calma</b></td><td class="n">34,8 %</td><td>La TRM y el resto de mercados se mueven poco; el VIX baja levemente. Al día siguiente la TRM se mueve 0,49 % en promedio.</td><td>Mantener la cobertura base (forwards a 30–90 días según los pagos esperados). Es buen momento para comprar opciones, porque la volatilidad está barata.</td></tr>
+<tr><td><b>Apetito por riesgo</b> (el peso se aprecia)</td><td class="n">34,9 %</td><td>El VIX cae 7 %, el dólar global se debilita y la TRM baja 1,4 % en 5 días. Es el régimen en que la TRM menos sube al día siguiente (43,8 %).</td><td>Importadores: adelantar compras de dólares y ampliar la cobertura. Exportadores: esperar para monetizar, porque el peso fuerte suele revertir.</td></tr>
+<tr><td><b>Aversión al riesgo</b> (el dólar sube)</td><td class="n">28,1 %</td><td>El VIX sube 12 %, caen el petróleo y Bitcoin y la TRM sube 1,6 % en 5 días. El MXN y el BRL se debilitan a la vez.</td><td>Exportadores: vender dólares a plazo y asegurar la tasa alta. Importadores: no perseguir el alza; escalonar las compras.</td></tr>
+<tr><td><b>Crisis / alta volatilidad</b></td><td class="n">2,2 %</td><td>La volatilidad de todos los mercados se multiplica (Brent 8 %, S&amp;P 3 %). La TRM se mueve 1,1 % diario. Dura semanas.</td><td>Reducir la exposición abierta, llevar la cobertura al máximo de la política y ampliar los límites de pérdida. El pronóstico del modelo es menos confiable en este régimen.</td></tr>
+</table>
+<p>El último día de la muestra (17-oct-2026) quedó en <b>Apetito por riesgo</b>. Como trabajo futuro, la API en AWS puede asignar el régimen del día con el mismo escalador y los mismos centroides, para mostrarlo junto al pronóstico de la TRM.</p>
+<div class="box"><b>Entregable:</b> el clúster no es el resultado final. El resultado es una regla de decisión: según el régimen del día, cuánto cubrirse, con qué instrumento y cuánto confiar en el pronóstico.</div>
+
+</body>
+</html>
