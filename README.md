@@ -88,3 +88,21 @@ Al terminar cada sesión: `terraform destroy` (ver `docs/costos.md`).
 | larepublica.co (Finanzas, Economía, Globoeconomía) | Web scraping HTML | Titulares e índice de sentimiento cambiario diario |
 
 Aviso: es un proyecto académico, no una recomendación de inversión.
+
+## Avance del proyecto integrador (14 de noviembre de 2026)
+
+Reporte de avance en formato IEEE: `docs/avance/avance.tex` (figuras en `docs/avance/fig/`). Se compila en Overleaf con pdfLaTeX subiendo la carpeta `docs/avance` completa.
+
+| Módulo de los lineamientos | Evidencia en el repositorio |
+|---|---|
+| A. Documento técnico (introducción, problema y ODS, estructura del sistema) | `docs/avance/avance.tex`, secciones I a III |
+| B. Minería de Datos: dataset limpio | `data/processed/dataset.csv`, `src/pipeline/prepare.py` |
+| B. Nulos y outliers | `reports/data_quality.json` |
+| B. EDA | `src/pipeline/eda.py`, `reports/eda_*.json`, `reports/figures/eda_*.png` |
+| B. Web scraping y fuentes externas | `src/ingest/scraper.py`, `src/ingest/apis.py`, `data/raw/news/` |
+| B. Clustering y reglas de asociación | `src/pipeline/unsupervised.py`, `src/pipeline/elbow.py`, `reports/unsupervised.json`, `reports/association_rules_top.csv` |
+| C. Cloud: diagrama de arquitectura | `docs/arquitectura.png` |
+| C. Infraestructura como Código | `infra/terraform/` (Terraform, AWS) |
+| C. Pruebas de disponibilidad y carga | `scripts/experiments/`, `reports/experiments/` |
+| C. Estimación de costos | `docs/costos.md` |
+| D. Integración con Machine Learning | `src/pipeline/train.py`, `reports/model_results.json`, `models/` |
