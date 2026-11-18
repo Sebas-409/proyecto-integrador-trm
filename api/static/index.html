@@ -6,7 +6,7 @@
 <title>TRM Predict</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#5b6472; --line:#e3e6eb; --up:#c0392b; --down:#1e8449; --accent:#1f4e8c; }
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#5b6472; --line:#e3e6eb; --up:#c0392b; --down:#1e8449; --accent:#1f4e8c; --wait:#b9770e; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
   header { padding:20px 24px 8px; max-width:1100px; margin:auto; }
@@ -37,6 +37,23 @@
   #chat-form { display:flex; gap:8px; margin-top:8px; }
   #chat-form button { margin-top:0; flex:none; }
   #chat-form button:disabled { opacity:.6; cursor:wait; }
+  .verdict { margin-top:14px; padding:14px 16px; border-radius:8px; border-left:5px solid; background:var(--bg); }
+  .verdict b { font-size:18px; display:block; margin-bottom:4px; }
+  .verdict.comprar_hoy { border-color:var(--down); } .verdict.comprar_hoy b { color:var(--down); }
+  .verdict.esperar { border-color:var(--wait); } .verdict.esperar b { color:var(--wait); }
+  .verdict.no_viable { border-color:var(--up); } .verdict.no_viable b { color:var(--up); }
+  .grid-form { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0 12px; }
+  .wide { overflow-x:auto; }
+  .wide table { min-width:820px; }
+  .wide th { font-size:12px; color:var(--muted); font-weight:500; text-align:right; padding:6px 4px; border-bottom:1px solid var(--line); }
+  .wide th:first-child, .wide td:first-child { text-align:left; }
+  .wide td { text-align:right; padding:6px 4px; font-variant-numeric:tabular-nums; }
+  .pill { font-size:12px; padding:2px 8px; border-radius:99px; background:var(--bg); border:1px solid var(--line); white-space:nowrap; }
+  .del { background:none; color:var(--muted); margin:0; padding:2px 6px; font-size:16px; }
+  .sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin:12px 0; }
+  .sum div { background:var(--bg); border-radius:8px; padding:10px 12px; }
+  .sum span { display:block; font-size:12px; color:var(--muted); }
+  .sum strong { font-size:18px; font-variant-numeric:tabular-nums; }
   @media (max-width: 800px) { .kpi { grid-column: span 6; } .chart, .side { grid-column: span 12; } main, header { padding-left:16px; padding-right:16px; } }
 </style>
 </head>
@@ -62,6 +79,36 @@
     <label for="s-dxy">Índice dólar DXY, retorno del día (%)</label><input id="s-dxy" type="number" step="0.1" value="0.5">
     <button id="b-sim">Simular</button>
     <p id="sim-out"></p>
+  </div>
+
+  <div class="card full" id="importador">
+    <h2>Importadores: ¿compro hoy o espero a mañana?</h2>
+    <small>Para quien trae mercancía de EE. UU. con casillero (USD 10 por kg, se cobra el kg completo) y la vende en pesos. Sin impuestos de importación por ahora.</small>
+    <form id="imp-form" class="grid-form">
+      <div><label for="i-precio">Precio en la tienda (USD)</label><input id="i-precio" type="number" min="0.01" step="0.01" value="800" required></div>
+      <div><label for="i-peso">Peso (kg)</label><input id="i-peso" type="number" min="0.01" step="0.01" value="0.5" required></div>
+      <div><label for="i-venta">Lo vendes en (COP)</label><input id="i-venta" type="number" min="1" step="any" value="3300000" required></div>
+      <div><label for="i-margen">Margen mínimo (%)</label><input id="i-margen" type="number" min="0" max="99" step="1" value="10"></div>
+      <div><label for="i-recargo">Recargo del banco (%)</label><input id="i-recargo" type="number" min="0" max="20" step="0.1" value="3"></div>
+      <div><label>&nbsp;</label><button style="margin-top:0;width:100%">Calcular</button></div>
+    </form>
+    <div id="imp-out"></div>
+  </div>
+
+  <div class="card full" id="historial">
+    <h2>Historial de pedidos</h2>
+    <small>Registra lo que vendiste y cuándo lo pagaste en EE. UU. Mira tu margen real, cuánto te quitó o te dio la TRM entre la venta y el pago, y qué decía la señal ese día. Los pedidos se guardan solo en este navegador.</small>
+    <form id="h-form" class="grid-form">
+      <div><label for="h-prod">Producto</label><input id="h-prod" maxlength="120" placeholder="iPhone 16 128 GB"></div>
+      <div><label for="h-precio">Precio (USD)</label><input id="h-precio" type="number" min="0.01" step="0.01" required></div>
+      <div><label for="h-peso">Peso (kg)</label><input id="h-peso" type="number" min="0.01" step="0.01" required></div>
+      <div><label for="h-venta">Vendido en (COP)</label><input id="h-venta" type="number" min="1" step="any" required></div>
+      <div><label for="h-fv">Fecha de venta</label><input id="h-fv" type="date" required></div>
+      <div><label for="h-fc">Fecha de pago en EE. UU.</label><input id="h-fc" type="date" required></div>
+      <div><label for="h-banco">TRM del banco (opcional)</label><input id="h-banco" type="number" min="1000" step="0.01" placeholder="del extracto"></div>
+      <div><label>&nbsp;</label><button style="margin-top:0;width:100%">Agregar pedido</button></div>
+    </form>
+    <div id="h-out"></div>
   </div>
 
   <div class="card full">
@@ -145,6 +192,90 @@ document.getElementById("chat-form").onsubmit = async (ev) => {
     btn.disabled = false; btn.textContent = "Enviar"; input.focus();
   }
 };
+
+// ---------- Importadores ----------
+const cop = n => "$" + Math.round(n).toLocaleString("es-CO");
+const LABEL = { comprar_hoy: "Compra hoy", esperar: "Espera a mañana", no_viable: "No es viable" };
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const val = id => document.getElementById(id).value;
+const params = () => ({ margen_min_pct: +val("i-margen") || 0, recargo_banco_pct: +val("i-recargo") || 0 });
+async function jpost(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Revisa los datos ingresados");
+  return d;
+}
+
+document.getElementById("imp-form").onsubmit = async (ev) => {
+  ev.preventDefault();
+  const out = document.getElementById("imp-out");
+  try {
+    const d = await jpost("/api/importador/decision",
+      { precio_usd: +val("i-precio"), peso_kg: +val("i-peso"), venta_cop: +val("i-venta"), ...params() });
+    const r = d.manana_rango;
+    out.innerHTML = `
+      <div class="verdict ${d.decision}"><b>${LABEL[d.decision]}</b>${esc(d.explicacion)}</div>
+      <div class="wide"><table style="margin-top:12px">
+        <tr><th></th><th>TRM</th><th>Costo puesto en Colombia</th><th>Margen</th><th>Margen %</th></tr>
+        <tr><td>Hoy (TRM del ${d.base_date})</td><td>${fmt(d.hoy.trm)}</td><td>${cop(d.hoy.costo_cop)}</td><td>${cop(d.hoy.margen_cop)}</td><td>${fmt(d.hoy.margen_pct,1)} %</td></tr>
+        <tr><td>Mañana, esperado</td><td>${fmt(d.manana.trm)}</td><td>${cop(d.manana.costo_cop)}</td><td>${cop(d.manana.margen_cop)}</td><td>${fmt(d.manana.margen_pct,1)} %</td></tr>
+        <tr><td><small>Mañana, rango por error del modelo</small></td><td><small>${fmt(r.optimista.trm)} – ${fmt(r.pesimista.trm)}</small></td><td><small>${cop(r.optimista.costo_cop)} – ${cop(r.pesimista.costo_cop)}</small></td><td></td><td></td></tr>
+      </table></div>
+      <p><small>USD ${fmt(d.usd_total)} = producto + casillero USD ${fmt(d.casillero_usd,0)} (${d.kg_cobrados} kg cobrados) · Probabilidad de baja: ${fmt(d.prob_baja*100,0)} % · Régimen: ${esc(d.regimen || "sin dato")}.
+      Regla probada entre ${d.regla.periodo_prueba[0]} y ${d.regla.periodo_prueba[1]}: cuando dijo «espera» acertó el ${fmt(d.regla.acierto_al_esperar*100,0)} % de las veces.
+      Con tarjeta, el banco liquida 1 a 3 días después de la compra.</small></p>`;
+  } catch (e) { out.innerHTML = `<p class="up">${esc(e.message)}</p>`; }
+};
+
+const KEY = "trm-pedidos";
+function getPedidos() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function setPedidos(p) { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch {} }
+const pedidos = getPedidos();  // si el navegador bloquea el almacenamiento, viven solo en memoria
+
+document.getElementById("h-form").onsubmit = (ev) => {
+  ev.preventDefault();
+  if (val("h-fc") < val("h-fv") && !confirm("La fecha de pago es anterior a la de venta. ¿Agregarlo igual?")) return;
+  pedidos.push({ producto: val("h-prod").trim(), precio_usd: +val("h-precio"), peso_kg: +val("h-peso"),
+    venta_cop: +val("h-venta"), fecha_venta: val("h-fv"), fecha_compra: val("h-fc"),
+    trm_banco: val("h-banco") ? +val("h-banco") : null });
+  setPedidos(pedidos); ev.target.reset(); renderHistorial();
+};
+
+async function renderHistorial() {
+  const out = document.getElementById("h-out");
+  if (!pedidos.length) { out.innerHTML = "<p><small>Aún no hay pedidos.</small></p>"; return; }
+  try {
+    const d = await jpost("/api/importador/historial", { pedidos, ...params() });
+    const s = d.resumen, sg = n => (n > 0 ? "+" : n < 0 ? "−" : "") + cop(Math.abs(n));
+    const trmTxt = s.trm_se_comio_cop > 0 ? `Te quitó ${cop(s.trm_se_comio_cop)}` : `Te dio ${cop(-s.trm_se_comio_cop)}`;
+    const row = r => r.error
+      ? `<tr><td>${esc(r.producto || "Pedido " + (r.i + 1))}</td><td colspan="9" class="up" style="text-align:left">${esc(r.error)}</td><td><button class="del" data-i="${r.i}" aria-label="Borrar pedido">×</button></td></tr>`
+      : `<tr><td>${esc(r.producto || "Pedido " + (r.i + 1))}</td><td>${r.fecha_venta} → ${r.fecha_compra}</td><td>${fmt(r.usd_total)}</td>
+          <td>${fmt(r.trm_venta)}</td><td>${fmt(r.trm_pagada)}${r.trm_pagada_estimada ? "*" : ""}</td><td>${cop(r.costo_cop)}</td>
+          <td>${cop(r.margen_cop)} <small>${fmt(r.margen_pct,1)} %</small></td>
+          <td class="${r.trm_se_comio_cop > 0 ? "up" : "down"}">${sg(r.trm_se_comio_cop)}</td>
+          <td>${r.senal ? `<span class="pill">${LABEL[r.senal]}</span>` : "<small>sin dato</small>"}</td>
+          <td>${r.impacto_senal_cop == null ? "<small>–</small>" : sg(r.impacto_senal_cop)}</td>
+          <td><button class="del" data-i="${r.i}" aria-label="Borrar pedido">×</button></td></tr>`;
+    out.innerHTML = `
+      <div class="sum">
+        <div><span>Pedidos</span><strong>${s.pedidos}</strong></div>
+        <div><span>Margen real</span><strong>${cop(s.margen_cop)}</strong> <small>${s.venta_cop ? fmt(s.margen_cop / s.venta_cop * 100, 1) + " %" : ""}</small></div>
+        <div><span>TRM entre venta y pago</span><strong class="${s.trm_se_comio_cop > 0 ? "up" : "down"}">${trmTxt}</strong></div>
+        <div><span>Recargo del banco</span><strong>${cop(s.recargo_banco_cop)}</strong></div>
+        <div><span>Si hubieras seguido la señal</span><strong class="${s.impacto_senal_cop >= 0 ? "down" : "up"}">${sg(s.impacto_senal_cop)}</strong></div>
+      </div>
+      <div class="wide"><table>
+        <tr><th>Producto</th><th>Venta → pago</th><th>USD total</th><th>TRM venta</th><th>TRM pagada</th><th>Costo</th><th>Margen</th><th>La TRM te quitó</th><th>Señal ese día</th><th>Efecto de la señal</th><th></th></tr>
+        ${d.pedidos.map(row).join("")}
+      </table></div>
+      <p><small>* TRM oficial + recargo del banco (no pusiste la del extracto). «La TRM te quitó» compara la TRM oficial del día de la venta con la del día del pago.
+      «Efecto de la señal»: si decía «espera», lo que habrías ahorrado (o perdido) pagando al día siguiente; si decía «compra hoy», es lo que hiciste.
+      La señal se recalcula con el modelo actual (datos hasta ${s.datos_hasta}); en fechas que el modelo ya vio al entrenar puede verse mejor de lo que fue.</small></p>`;
+    out.querySelectorAll(".del").forEach(b => b.onclick = () => { pedidos.splice(+b.dataset.i, 1); setPedidos(pedidos); renderHistorial(); });
+  } catch (e) { out.innerHTML = `<p class="up">${esc(e.message)}</p>`; }
+}
+renderHistorial();
 
 load().catch(e => { document.querySelector("header p").textContent = "Error cargando datos: " + e.message; });
 </script>

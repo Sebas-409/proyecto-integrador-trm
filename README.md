@@ -76,7 +76,19 @@ Al terminar cada sesión: `terraform destroy` (ver `docs/costos.md`).
 | POST | `/api/scenario` | Qué pasaría si: `{"shocks": {"brent_ret_1": -0.03}}` |
 | GET | `/api/history?days=180` | Serie de la TRM |
 | GET | `/api/model` | Modelos elegidos, métricas de prueba y top SHAP |
+| POST | `/api/importador/decision` | ¿Compro hoy, espero a mañana o no es viable? `{"precio_usd": 800, "peso_kg": 0.5, "venta_cop": 3300000}` |
+| POST | `/api/importador/historial` | Margen real, efecto de la TRM y de la señal sobre los pedidos del importador |
 | GET | `/` | Tablero web |
+
+## Importadores (EE. UU. → Colombia)
+
+Para quien compra mercancía en EE. UU., la trae con casillero (USD 10 por kg, se cobra el kg completo) y la vende en pesos. Por ahora no se incluyen impuestos de importación.
+
+- **Costo puesto en Colombia** = (precio + 10 × kg redondeados hacia arriba) × TRM × (1 + recargo del banco).
+- **Regla**: esperar a mañana si P(baja) ≥ 55 % y el régimen K-Means no es Crisis. Si no, comprar hoy. Si el margen no llega al mínimo ni con la TRM optimista de mañana, el pedido no es viable.
+- **Validación** (`python -m src.pipeline.evaluate_importador` → `reports/importador_eval.json`): en el periodo de prueba (2024-12 a 2026-10), cuando la regla dijo "espera" acertó el 63 % de las veces y ahorró en promedio COP 9.900 por cada USD 1.000. Esperar al azar dio COP 1.383 por día y la regla COP 2.315 por cada USD 1.000. El periodo fue de peso apreciándose, así que esperar al azar también ganaba.
+- El régimen del día se calcula en la API con `api/regimes.json` (`python -m src.pipeline.regime_export`, el mismo K-Means de `elbow.py`).
+- El historial de pedidos se guarda en el navegador del usuario (localStorage); la API solo lo analiza.
 
 ## Fuentes de datos
 

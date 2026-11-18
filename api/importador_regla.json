@@ -1,0 +1,10 @@
+{
+ "umbral_p_baja": 0.55,
+ "periodo_prueba": [
+  "2024-12-18",
+  "2026-10-17"
+ ],
+ "acierto_al_esperar": 0.6337,
+ "dias_espera": 101,
+ "ahorro_cop_por_1000usd_cuando_espera": 9900.7
+}

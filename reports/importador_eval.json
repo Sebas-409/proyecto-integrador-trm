@@ -1,0 +1,47 @@
+{
+  "periodo_prueba": [
+    "2024-12-18",
+    "2026-10-17"
+  ],
+  "dias": 432,
+  "reglas": {
+    "P(baja)>=0.50": {
+      "dias_espera": 212,
+      "acierto_al_esperar": 0.5801886792452831,
+      "ahorro_cop_por_1000usd_dia": 3089.9,
+      "ahorro_cop_por_1000usd_cuando_espera": 6296.4
+    },
+    "P(baja)>=0.50 sin alerta ni crisis": {
+      "dias_espera": 165,
+      "acierto_al_esperar": 0.5696969696969697,
+      "ahorro_cop_por_1000usd_dia": 1830.8,
+      "ahorro_cop_por_1000usd_cuando_espera": 4793.4
+    },
+    "P(baja)>=0.55": {
+      "dias_espera": 101,
+      "acierto_al_esperar": 0.6336633663366337,
+      "ahorro_cop_por_1000usd_dia": 2314.7,
+      "ahorro_cop_por_1000usd_cuando_espera": 9900.7
+    },
+    "P(baja)>=0.55 sin alerta ni crisis": {
+      "dias_espera": 75,
+      "acierto_al_esperar": 0.64,
+      "ahorro_cop_por_1000usd_dia": 1541.4,
+      "ahorro_cop_por_1000usd_cuando_espera": 8878.3
+    },
+    "P(baja)>=0.60": {
+      "dias_espera": 38,
+      "acierto_al_esperar": 0.6052631578947368,
+      "ahorro_cop_por_1000usd_dia": 995.2,
+      "ahorro_cop_por_1000usd_cuando_espera": 11313.3
+    },
+    "P(baja)>=0.60 sin alerta ni crisis": {
+      "dias_espera": 25,
+      "acierto_al_esperar": 0.56,
+      "ahorro_cop_por_1000usd_dia": 476.7,
+      "ahorro_cop_por_1000usd_cuando_espera": 8237.9
+    }
+  },
+  "aleatorio_media_1000_sim": 1383.3,
+  "oraculo": 12701.5
+}
