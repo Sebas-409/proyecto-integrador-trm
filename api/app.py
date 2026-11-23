@@ -32,7 +32,8 @@ MARKETS = list(YAHOO_SYMBOLS) + list(BINANCE_SYMBOLS)
 CACHE_SECONDS = 600
 
 app = FastAPI(title="TRM Predict API", version="1.0.0",
-              description="Pronóstico de la dirección y el valor de la TRM (COP/USD) del siguiente día hábil.")
+              description="Pronóstico de la dirección y el valor de la TRM (COP/USD) del siguiente día hábil, "
+                          "pensado para importadores de iPhone que pagan en dólares y venden en pesos.")
 _state = {"bundle": None, "features": None, "loaded_at": 0.0}
 
 
@@ -158,8 +159,8 @@ def model_info():
     return bundle["meta"]
 
 
-# ---------------- Importadores: ¿compro hoy o mañana? ----------------
-# Para quien trae mercancía de EE. UU. con casillero y la vende en pesos. Sin impuestos por ahora.
+# ---------------- Importadores de iPhone: ¿compro hoy o mañana? ----------------
+# Para quien compra iPhone en EE. UU., los trae con casillero y los vende en pesos. Sin impuestos por ahora.
 
 CASILLERO_USD_KG = 10.0  # tarifa fija por kg; se cobra el kg completo (0,3 kg = 1 kg)
 REGIMES = json.loads((Path(__file__).parent / "regimes.json").read_text(encoding="utf-8"))
@@ -239,7 +240,7 @@ def decide(usd: float, venta_cop: float, margen_min: float, recargo: float,
 
 
 class Compra(BaseModel):
-    precio_usd: float = Field(gt=0, le=100_000, description="Precio del producto en la tienda de EE. UU.")
+    precio_usd: float = Field(gt=0, le=100_000, description="Precio del iPhone en la tienda de EE. UU.")
     peso_kg: float = Field(gt=0, le=500)
     venta_cop: float = Field(gt=0, description="Precio al que lo vendes en Colombia")
     margen_min_pct: float = Field(10, ge=0, lt=100)
@@ -358,12 +359,15 @@ CHAT_LIMIT_PER_HOUR = 30  # por IP y por instancia: la clave paga cada pregunta
 _chat = {"client": None, "hits": {}}
 
 CHAT_SYSTEM = """Eres el asistente de TRM Predict, un proyecto académico de la Universidad Santo Tomás Tunja \
-que pronostica la TRM (tasa representativa del mercado COP/USD) del siguiente día hábil.
+que pronostica la TRM (tasa representativa del mercado COP/USD) del siguiente día hábil. Está pensado para \
+importadores de iPhone: comercios que compran los equipos en EE. UU. en dólares, los traen con casillero y los \
+venden en Colombia en pesos, así que cada peso que sube la TRM entre la venta y el pago les quita margen.
 
 Responde en español, claro y breve (máximo 3 párrafos cortos), en texto plano: la página no interpreta \
 Markdown, así que no uses asteriscos, almohadillas ni tablas. Usa solo los datos del contexto que te dan; \
 si algo no está ahí, dilo en lugar de inventarlo. No des recomendaciones de inversión personalizadas: \
-puedes explicar qué indica el modelo y qué suelen hacer importadores y exportadores, aclarando que es un \
+puedes explicar qué indica el modelo y qué significa para quien tiene que pagar un pedido de iPhone en \
+dólares (pagar hoy o esperar a mañana), aclarando que es un \
 sistema académico de apoyo a decisiones.
 
 Conceptos que debes tener claros:

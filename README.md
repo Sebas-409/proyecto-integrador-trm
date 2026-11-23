@@ -1,11 +1,13 @@
-# TRM Predict: analítica predictiva en la nube para el riesgo cambiario en Colombia
+# TRM Predict: analítica predictiva en la nube para el riesgo cambiario de los importadores de iPhone en Colombia
 
 Proyecto integrador de V semestre (Minería de Datos, Machine Learning y Cloud Computing).
 **ODS 8** (trabajo decente y crecimiento económico, meta 8.10) y **ODS 10** (reducción de desigualdades, meta 10.c, remesas).
 
 El sistema pronostica, para el siguiente día hábil, la **dirección** de la TRM (COP/USD), su **valor esperado**
-y la **probabilidad de un movimiento fuerte**. Así, hogares que reciben remesas y mipymes importadoras pueden
-decidir cuándo monetizar o comprar dólares, o cuándo cubrirse.
+y la **probabilidad de un movimiento fuerte**. El usuario principal son los **importadores de iPhone**: comercios
+que compran los equipos en EE. UU. en dólares y los venden en Colombia en pesos. Como el precio al cliente se
+fija en pesos antes de pagar el pedido, una subida de la TRM entre la venta y el pago les quita margen. Con el
+pronóstico pueden decidir si pagan hoy, esperan a mañana o si el pedido no es viable.
 
 ![Arquitectura](docs/arquitectura.png)
 
@@ -76,14 +78,16 @@ Al terminar cada sesión: `terraform destroy` (ver `docs/costos.md`).
 | POST | `/api/scenario` | Qué pasaría si: `{"shocks": {"brent_ret_1": -0.03}}` |
 | GET | `/api/history?days=180` | Serie de la TRM |
 | GET | `/api/model` | Modelos elegidos, métricas de prueba y top SHAP |
-| POST | `/api/importador/decision` | ¿Compro hoy, espero a mañana o no es viable? `{"precio_usd": 800, "peso_kg": 0.5, "venta_cop": 3300000}` |
-| POST | `/api/importador/historial` | Margen real, efecto de la TRM y de la señal sobre los pedidos del importador |
+| POST | `/api/importador/decision` | ¿Compro hoy, espero a mañana o no es viable? `{"precio_usd": 929, "peso_kg": 0.5, "venta_cop": 4200000}` (un iPhone 17) |
+| POST | `/api/importador/historial` | Margen real, efecto de la TRM y de la señal sobre los pedidos de iPhone del importador |
 | GET | `/` | Tablero web |
 
-## Importadores (EE. UU. → Colombia)
+## Importadores de iPhone (EE. UU. → Colombia)
 
-Para quien compra mercancía en EE. UU., la trae con casillero (USD 10 por kg, se cobra el kg completo) y la vende en pesos. Por ahora no se incluyen impuestos de importación.
+Es el caso de uso central del proyecto. Para quien compra iPhone en EE. UU., los trae con casillero (USD 10 por kg, se cobra el kg completo) y los vende en pesos. Por ahora no se incluyen impuestos de importación.
 
+- **Por qué iPhone**: es un producto de precio alto en dólares y margen corto en pesos, así que pocos pesos de diferencia en la TRM cambian la ganancia de cada equipo.
+- **Tablero**: la calculadora trae una lista de modelos con el precio de referencia de Apple en EE. UU. (256 GB, noviembre de 2026: iPhone 17e USD 699, iPhone 17 USD 929, iPhone Air USD 1.099, iPhone 18 Pro USD 1.199, iPhone 18 Pro Max USD 1.299). El precio se puede cambiar a mano.
 - **Costo puesto en Colombia** = (precio + 10 × kg redondeados hacia arriba) × TRM × (1 + recargo del banco).
 - **Regla**: esperar a mañana si P(baja) ≥ 55 % y el régimen K-Means no es Crisis. Si no, comprar hoy. Si el margen no llega al mínimo ni con la TRM optimista de mañana, el pedido no es viable.
 - **Validación** (`python -m src.pipeline.evaluate_importador` → `reports/importador_eval.json`): en el periodo de prueba (2024-12 a 2026-10), cuando la regla dijo "espera" acertó el 63 % de las veces y ahorró en promedio COP 9.900 por cada USD 1.000. Esperar al azar dio COP 1.383 por día y la regla COP 2.315 por cada USD 1.000. El periodo fue de peso apreciándose, así que esperar al azar también ganaba.

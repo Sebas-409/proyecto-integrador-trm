@@ -1,4 +1,4 @@
-"""Backtest de la señal para importadores (compran USD para pagar mercancía en EE. UU.).
+"""Backtest de la señal para importadores de iPhone (compran USD para pagar los equipos en EE. UU.).
 
 Espejo de la simulación de remesas de evaluate_decisions.py: cada día del periodo de prueba el importador
 debe pagar USD 1.000 y decide si paga hoy a la TRM vigente o espera al día siguiente.
