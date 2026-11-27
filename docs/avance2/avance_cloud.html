@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Avance Cloud Computing - TRM Predict</title>
+<link rel="stylesheet" href="estilo.css"></head><body>
+
+<h1>TRM Predict: sistema en la nube para anticipar el riesgo cambiario en compras de iPhone en Colombia · avance de Cloud Computing</h1>
+<p class="sub">Proyecto integrador, V semestre. Universidad Santo Tomás, Tunja. Noviembre de 2026.<br>
+Repositorio: github.com/Sebas-409/proyecto-integrador-trm</p>
+
+<h2>1. De qué se trata</h2>
+<p>Pusimos en AWS una página web que muestra la TRM, el pronóstico del modelo y el tipo de mercado del día.
+Los datos se actualizan solos todos los días. Toda la infraestructura está escrita en código con Terraform, así que
+se puede crear o borrar completa con un solo comando.</p>
+<p>Dirección de la app: <b>http://trm-predict-dev-alb-496593350.us-east-1.elb.amazonaws.com/</b></p>
+
+<h2>2. Arquitectura</h2>
+<figure><img src="../arquitectura.png"><figcaption>Servicios de AWS usados y cómo se conectan.</figcaption></figure>
+
+<table>
+  <tr><th>Servicio</th><th>Para qué lo usamos</th></tr>
+  <tr><td>VPC (subredes públicas y privadas)</td><td>Red propia del proyecto. La base de datos queda en la parte privada, sin acceso desde internet.</td></tr>
+  <tr><td>EC2 + Auto Scaling</td><td>Servidores que corren la página. Si hay mucho tráfico se crean más; si uno se cae, se reemplaza solo.</td></tr>
+  <tr><td>Load Balancer (ALB)</td><td>Reparte las visitas entre los servidores y solo envía tráfico a los que están sanos.</td></tr>
+  <tr><td>ECR</td><td>Guarda la imagen Docker de la aplicación.</td></tr>
+  <tr><td>RDS PostgreSQL</td><td>Base de datos con la TRM y las predicciones.</td></tr>
+  <tr><td>S3</td><td>Guarda los datos crudos y el modelo. Tiene versiones y una copia en otra región por si falla la principal.</td></tr>
+  <tr><td>Lambda + EventBridge</td><td>Dos funciones que corren solas cada día: una descarga los datos y otra los limpia y carga a la base.</td></tr>
+  <tr><td>CloudWatch + SNS</td><td>Tablero de métricas y 3 alarmas que avisan por correo (errores 5xx, servidores caídos, fallas al descargar datos).</td></tr>
+  <tr><td>SSM Parameter Store</td><td>Guarda contraseñas y claves fuera del código.</td></tr>
+  <tr><td>AWS Budgets</td><td>Avisa si el gasto pasa del 50 %, 80 % o 100 % de 30 USD.</td></tr>
+</table>
+
+<h2>3. Pruebas que ya hicimos</h2>
+<h3>3.1 Prueba de carga</h3>
+<p>Mandamos visitas sin parar durante 14 minutos con 16 usuarios simultáneos: <b>4.543 peticiones, 0 errores</b>.
+El Auto Scaling vio que la CPU subía y pasó de 2 a <b>4 servidores</b> solo.</p>
+<figure><img src="../../reports/experiments/load_timeline.png" style="width:85%;display:block;margin:auto">
+<figcaption>Tiempo de respuesta (ms) y número de servidores durante la prueba de carga. Cuando entran los servidores 3 y 4 (minuto 9) la página responde más rápido.</figcaption></figure>
+
+<h3>3.2 Prueba de caída de un servidor</h3>
+<p>Apagamos a propósito un servidor mientras consultábamos la página cada segundo. Lo hicimos dos veces:</p>
+<ul>
+  <li><b>Con mínimo 1 servidor:</b> al apagarlo no quedó ninguno y la página estuvo caída casi 2 minutos (77,8 % disponible).</li>
+  <li><b>Con mínimo 2 servidores:</b> las 378 consultas respondieron bien (<b>100 % disponible</b>). El Load Balancer mandó
+      el tráfico al servidor que seguía vivo y el Auto Scaling creó uno nuevo en unos 2 minutos y 20 segundos.</li>
+</ul>
+<p>Por eso dejamos el Auto Scaling con mínimo 2 servidores, cada uno en una zona distinta.</p>
+<figure><img src="../../reports/experiments/ha_timeline.png" style="width:85%;display:block;margin:auto">
+<figcaption>Disponibilidad durante la caída provocada de un servidor.</figcaption></figure>
+
+<h3>3.3 Costos</h3>
+<table>
+  <tr><th>Escenario</th><th class="n">Costo aproximado</th></tr>
+  <tr><td>Todo encendido 24/7 durante un mes</td><td class="n">63,6 USD/mes</td></tr>
+  <tr><td>Lo que cuesta el proyecto en el semestre (se enciende solo cuando se trabaja y en la sustentación)</td><td class="n">≈ 21 USD</td></tr>
+</table>
+<p>Lo más caro es el Load Balancer (17 USD), los 2 servidores (15 USD) y las IP públicas (15 USD). El detalle está en <code>docs/costos.md</code>.</p>
+
+<h2>4. Nuevo en este avance: asistente con IA dentro del tablero</h2>
+<div class="nuevo">Agregamos al tablero un chat donde el usuario puede preguntar cosas como "¿por qué subió el dólar esta semana?"
+y el asistente responde con los datos del proyecto. Usa el modelo Claude de Anthropic.</div>
+
+<h3>Cómo funciona en la nube</h3>
+<ol>
+  <li>La página manda la pregunta a la ruta <code>/api/chat</code> de nuestro servidor.</li>
+  <li>El servidor toma la clave de Anthropic desde <b>SSM Parameter Store</b>. La clave nunca está en el código ni en GitHub.</li>
+  <li>El servidor tiene un <b>rol de IAM</b> con permiso solo para leer ese parámetro.</li>
+  <li>Para evitar abusos y gastos altos, cada IP puede hacer máximo <b>30 preguntas por hora</b>.</li>
+</ol>
+
+<h3>Cómo lo desplegamos</h3>
+<ol>
+  <li>Construimos una nueva imagen Docker con el asistente y la subimos a <b>ECR</b>.</li>
+  <li>Le pedimos al Auto Scaling un <b>instance refresh</b>: cambia los servidores uno por uno por otros con la imagen nueva,
+      manteniendo siempre al menos la mitad encendidos. Así la página no se cae mientras se actualiza.</li>
+</ol>
+<p id="resultado-despliegue">RESULTADO_DESPLIEGUE</p>
+
+<h2>5. Siguientes pasos</h2>
+<ul>
+  <li>Mostrar en el tablero el tipo de mercado del día con las reglas del árbol de decisión (avance de minería).</li>
+  <li>Pasar la página a HTTPS con un certificado de AWS Certificate Manager.</li>
+  <li>Apagar la infraestructura después de la sustentación con <code>terraform destroy</code>.</li>
+</ul>
+</body></html>

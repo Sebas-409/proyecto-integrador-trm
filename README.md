@@ -1,7 +1,7 @@
-# TRM Predict: analítica predictiva en la nube para anticipar el riesgo cambiario de los importadores de iPhone en Colombia
+# TRM Predict: sistema en la nube para anticipar el riesgo cambiario en compras de iPhone en Colombia
 
 Proyecto integrador de V semestre (Minería de Datos, Machine Learning y Cloud Computing).
-**ODS 8** (trabajo decente y crecimiento económico, meta 8.10) y **ODS 10** (reducción de desigualdades, meta 10.c, remesas).
+**ODS 8** (trabajo decente y crecimiento económico, pymes) y **ODS 9** (industria, innovación e infraestructura en la nube).
 
 El sistema pronostica, para el siguiente día hábil, la **dirección** de la TRM (COP/USD), su **valor esperado**
 y la **probabilidad de un movimiento fuerte**. El usuario principal es el **importador de iPhone**: compra el

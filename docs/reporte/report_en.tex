@@ -12,10 +12,10 @@
 
 \begin{document}
 
-\title{TRM Predict: A Cloud-Native Predictive Analytics System for Exchange-Rate Risk Decisions in Colombia}
+\title{TRM Predict: A Cloud-Based System to Anticipate Exchange-Rate Risk in iPhone Purchases in Colombia}
 
 \author{
-\IEEEauthorblockN{Sebastián Cubides, Nicolás Vergara, Edgar Ruiz}
+\IEEEauthorblockN{Edgar Andrés Ruiz Salazar, Juan Nicolás Vergara Rojas, Kevin Sebastián Cubides Velandia}
 \IEEEauthorblockA{\textit{Data Engineering and Artificial Intelligence, 5th semester}\\
 \textit{Universidad Santo Tomás}, Tunja, Colombia\\
 Integrative Project: Data Mining, Machine Learning and Cloud Computing --- 2026-2}
@@ -24,7 +24,7 @@ Integrative Project: Data Mining, Machine Learning and Cloud Computing --- 2026-
 \maketitle
 
 \begin{abstract}
-Households that receive remittances and micro, small and medium enterprises (MSMEs) that import goods in Colombia are exposed to the volatility of the peso--dollar exchange rate (TRM) without the analytical tools of large firms. We present \emph{TRM Predict}, a cloud-native decision-support system that forecasts, for the next business day, the direction of the TRM, its expected value and the probability of a large move. A CRISP-DM pipeline integrates the official TRM, eight market series, two crypto-assets and a web-scraped news-sentiment index into a leakage-free data set of 2{,}159 days and 43 features. Unsupervised mining identifies three market regimes, 57 anomalous days and association rules with lift up to 1.24. Among 19 tuned models, only the ensembles beat chance out of sample: Gradient Boosting reaches a test ROC-AUC of 0.566 for direction and 0.586 for risk, and a regression RMSE 2.4\% below the random walk; a remittance-household simulation turns the direction signal into a positive gain versus always selling at once. The system runs on AWS and is fully described in Terraform (64 resources): serverless ingestion, an S3 data lake replicated across regions, PostgreSQL on RDS and a containerized API behind a load balancer with auto-scaling in two availability zones. Experiments show that, with at least one instance per zone, terminating a server causes no failed request (100\% availability versus 77.8\% with a single minimum instance), and that scaling out from two to four instances raises throughput by 84\% and cuts median latency by 60\%. The project contributes to SDG~8 (target 8.10) and SDG~10 (target 10.c).
+Small importers who sell iPhones in pesos in Colombia and pay for them in dollars in the United States, shipping them through a parcel-forwarding service, bear the risk that the peso--dollar exchange rate (TRM) changes between the sale and the payment, without the analytical tools of large firms. We present \emph{TRM Predict}, a cloud-native decision-support system that forecasts, for the next business day, the direction of the TRM, its expected value and the probability of a large move, and shows the cost in pesos of an iPhone today versus tomorrow with a purchase recommendation. The project followed Design Thinking as its overall methodology and KDD/CRISP-DM in the prototype phase. The pipeline integrates the official TRM, eight market series, two crypto-assets and a web-scraped news-sentiment index into a leakage-free data set of 2{,}159 days and 43 features. Unsupervised mining identifies, with K-Means and the elbow method ($k=4$, silhouette 0.116), four market regimes (calm, risk-on, risk-off and crisis), 57 anomalous days and association rules with lift up to 1.24. Among 19 tuned models, only the ensembles beat chance out of sample. The selected Random Forest reaches a test ROC-AUC of 0.555 for direction and 0.585 for risk, and a regression RMSE 1.3\% below the random walk, a modest predictive ability. An importer rule (wait if the probability of a fall is at least 55\% outside the crisis regime) recommended waiting on 101 of 432 test days and was right on 63.4\% of them, although the period was one of peso appreciation in which waiting at random also saved money. The system runs on AWS and is fully described in Terraform (64 resources): serverless ingestion, an S3 data lake replicated across regions, PostgreSQL on RDS and a containerized API behind a load balancer with auto-scaling in two availability zones. Experiments show that, with at least one instance per zone, terminating a server causes no failed request (100\% availability versus 77.8\% with a single minimum instance), and that scaling out from two to four instances raises throughput by 84\% and cuts median latency by 60\%. The project contributes to SDG~8 (decent work and economic growth) and SDG~9 (industry, innovation and infrastructure).
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -32,14 +32,14 @@ cloud computing, data mining, machine learning, CRISP-DM, ensemble learning, exc
 \end{IEEEkeywords}
 
 \section{Introduction}
-The \emph{Tasa Representativa del Mercado} (TRM) is the official COP/USD exchange rate certified every day by Colombia's Financial Superintendence. It sets the price of imported goods, the value of the remittances received by households and the cost of dollar-denominated debt. Between September 2017 and October 2026 it moved between 2{,}705 (April 2018) and 5{,}061 COP/USD (November 2022); during 2025 alone it ranged from 3{,}707 to 4{,}417, a 19\% swing, and 18\% of trading days in our sample show a variation larger than 1\%.
+The \emph{Tasa Representativa del Mercado} (TRM) is the official COP/USD exchange rate certified every day by Colombia's Financial Superintendence. It sets the price in pesos of imported goods and the cost of dollar-denominated debt. Between September 2017 and October 2026 it moved between 2{,}705 (April 2018) and 5{,}061 COP/USD (November 2022); during 2025 alone it ranged from 3{,}707 to 4{,}417, a 19\% swing, and 18\% of trading days in our sample show a variation larger than 1\%.
 
-Large firms hedge this risk with treasury desks and derivatives, whereas households and MSMEs usually decide by intuition. Remittances to Colombia exceeded USD~11.8 billion in 2024~\cite{banrep_remesas}, so a better choice of \emph{when} to convert dollars has a tangible effect on family income. The project therefore addresses the 2030 Agenda~\cite{un2015}: SDG~8 (target 8.10, access to financial services) and SDG~10 (target 10.c, reducing the cost of remittances).
+Large firms hedge this risk with treasury desks and derivatives, whereas a small iPhone importer usually decides by intuition. The importer quotes or sells the device in pesos, but pays for it in dollars at a US store and ships it through a parcel-forwarding service: if the TRM rises between the day of the sale and the day of the payment, the margin shrinks. The practical question is: do I buy today or wait until tomorrow? The project therefore addresses the 2030 Agenda~\cite{un2015}: SDG~8 (decent work and economic growth, by giving small businesses a tool to manage exchange-rate risk) and SDG~9 (industry, innovation and infrastructure, through a scalable cloud infrastructure).
 
-\textbf{Contributions.} (i) A reproducible KDD/CRISP-DM pipeline over heterogeneous public sources, including a purpose-built web scraper; (ii) an honest benchmark of 19 regression and classification models against random-walk and majority-class baselines, with SHAP and LIME explanations and a decision-oriented evaluation; (iii) a production-style AWS deployment written entirely as Infrastructure as Code, with measured scalability, availability and cost.
+\textbf{Contributions.} (i) A reproducible KDD/CRISP-DM pipeline, framed within a Design Thinking process~\cite{brown2008}, over heterogeneous public sources, including a purpose-built web scraper; (ii) an honest benchmark of 19 regression and classification models against random-walk and majority-class baselines, with SHAP and LIME explanations and a decision-oriented evaluation; (iii) a production-style AWS deployment written entirely as Infrastructure as Code, with measured scalability, availability and cost.
 
 \section{Problem Statement}
-\textbf{Users.} Households receiving remittances, importing MSMEs, and financial-literacy programs. \textbf{Question.} Using only public data available before the next TRM is published, can we estimate (a) the probability that it rises, (b) its expected value and (c) the probability of an abnormally large move, verifiably better than naive baselines, and explain each prediction? Exchange rates are notoriously hard to forecast: Meese and Rogoff showed that structural models fail to beat a random walk out of sample~\cite{meese1983}. Consequently, the random walk and the majority class are mandatory baselines in this work.
+\textbf{Users.} Small importers who sell iPhones in pesos in Colombia and pay for them in dollars in the United States, using a parcel-forwarding service. Their problem with the TRM is the gap between the day they set the price in pesos and the day they pay in dollars, plus the surcharge the bank charges over the official TRM. \textbf{Question.} Using only public data available before the next TRM is published, can we estimate (a) the probability that it rises, (b) its expected value and (c) the probability of an abnormally large move, verifiably better than naive baselines, and explain each prediction? Exchange rates are notoriously hard to forecast: Meese and Rogoff showed that structural models fail to beat a random walk out of sample~\cite{meese1983}. Consequently, the random walk and the majority class are mandatory baselines in this work.
 
 \section{Related Work}
 Henrique \emph{et al.}~\cite{henrique2019} review machine learning for financial-market prediction and report the dominance of support vector machines and neural networks, with ensembles gaining ground; Sezer \emph{et al.}~\cite{sezer2020} survey deep learning for financial time series and stress its weak interpretability and reproducibility. Most studies address major currency pairs or equity indices and stop at offline evaluation. This work targets an emerging-market currency, uses country-specific drivers (oil, peer currencies, local news), favors interpretable ensembles explained with SHAP~\cite{lundberg2017} and LIME~\cite{ribeiro2016}, and delivers a deployed, reproducible service.
@@ -55,7 +55,7 @@ Fig.~\ref{fig:arch} depicts the system. Every business day at 18:30 (Colombia ti
 \end{figure*}
 
 \section{Data Mining Pipeline}
-The pipeline follows the KDD process~\cite{fayyad1996} organized with CRISP-DM~\cite{wirth2000}; every stage is a Python module that can be re-run end to end.
+The project followed Design Thinking~\cite{brown2008} as its overall methodology; its prototype phase follows the KDD process~\cite{fayyad1996} organized with CRISP-DM~\cite{wirth2000}; every stage is a Python module that can be re-run end to end.
 
 \subsection{Data Acquisition}
 Table~\ref{tab:sources} lists the sources. The scraper has a specific function that no API covers: it collects the headlines of three sections of \emph{La Rep\'ublica}, counts those about the dollar and computes a lexicon-based FX-sentiment score ($-1$ to $1$). It uses only the Python standard library so that it runs inside Lambda, issues one request per section per day and isolates its failures from numeric ingestion. Because historical headlines are not available, the score is stored daily and shown in the dashboard; it will enter the models once enough history accumulates.
@@ -95,10 +95,10 @@ TRM returns are leptokurtic (excess kurtosis 3.0, skewness 0.50, Jarque--Bera $p
 PCA on standardized features needs 26 of 43 components to retain 90\% of the variance, so the features are only weakly redundant and dimensionality reduction would discard information; it is used for analysis and visualization only. PC1 loads on peso and peer-currency momentum (5-day TRM return, USD/COP, USD/MXN, z-score), and PC2 on global volatility (S\&P~500, US~10Y, Brent, DXY).
 
 \subsection{Clustering: Market Regimes}
-Nine regime features (volatility and 5-day momentum of the TRM, VIX, DXY, Brent, BTC and S\&P~500) were standardized. With raw data, K-Means at $k=2$ only isolates the 33 most extreme days of 2020; tails were therefore clipped to the 1st--99th percentiles before K-Means and Ward hierarchical clustering, whereas DBSCAN~\cite{ester1996} was applied to the unclipped data as an anomaly detector. The silhouette method selects $k=3$ for both algorithms (Table~\ref{tab:regimes}): a risk-off regime in which the TRM rises on 52.9\% of the next days, a risk-on regime (44.3\%) and a high-volatility regime whose next-day volatility is 1.7 times higher. The low silhouette (0.12; Davies--Bouldin 2.08) shows overlapping regimes, which are thus used as context rather than as hard classes. DBSCAN ($\varepsilon=2.89$ from the 95th percentile of the 18-distance curve, \texttt{min\_samples}=18) flags 57 anomalous days (45 in 2020), on which next-day volatility is 1.73 times that of normal days.
+Nine regime features (volatility and 5-day momentum of the TRM, VIX, DXY, Brent, BTC and S\&P~500) were standardized. Tails were clipped to the 1st--99th percentiles before K-Means (and Ward hierarchical clustering as a contrast), whereas DBSCAN~\cite{ester1996} was applied to the unclipped data as an anomaly detector. The elbow method selects $k=4$ (Table~\ref{tab:regimes}): a calm regime (752 days, the TRM rises on 50.8\% of the next days), a risk-on regime in which the peso appreciates (754 days, 43.8\%), a risk-off regime in which the dollar rises (606 days, 51.3\%) and a crisis or high-volatility regime (47 days, concentrated in 2020) with the highest standard deviation of the next return (1.47\%). The low silhouette (0.116; Davies--Bouldin 1.91) shows overlapping regimes, which are thus used as context rather than as hard classes. DBSCAN ($\varepsilon=2.89$ from the 95th percentile of the 18-distance curve, \texttt{min\_samples}=18) flags 57 anomalous days (45 in 2020), on which next-day volatility is 1.73 times that of normal days.
 
 \begin{table}[t]
-\caption{K-Means market regimes ($k=3$)}
+\caption{K-Means market regimes ($k=4$, elbow method)}
 \label{tab:regimes}
 \centering
 \footnotesize
@@ -106,9 +106,10 @@ Nine regime features (volatility and 5-day momentum of the TRM, VIX, DXY, Brent,
 \toprule
 Regime & Days & TRM up next & $\sigma$ next ret. & VIX 5d \\
 \midrule
-Risk-off & 972 & 52.9\% & 0.78\% & $+8.1$\% \\
-High volatility & 124 & 46.8\% & 1.35\% & $-1.7$\% \\
-Risk-on & 1{,}063 & 44.3\% & 0.76\% & $-6.7$\% \\
+Calm & 752 & 50.8\% & 0.63\% & $-1.8$\% \\
+Risk-on & 754 & 43.8\% & 0.84\% & $-7.4$\% \\
+Risk-off & 606 & 51.3\% & 0.90\% & $+12.4$\% \\
+Crisis & 47 & 42.6\% & 1.47\% & $-0.3$\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -140,7 +141,7 @@ Brent$\uparrow$, DXY$\downarrow$ & down & 0.63 & 1.22 \\
 Data were split chronologically: training Sep.~2017--Dec.~2024 (1{,}727 days) and test Dec.~2024--Oct.~2026 (432 days). Inside training, hyperparameters were tuned with 5-fold \texttt{TimeSeriesSplit}, so each validation fold lies after its training fold. All models are scikit-learn~\cite{pedregosa2011} pipelines. Regression candidates: linear, polynomial (degree 2 on the $k$ best features) + Ridge, Ridge, Lasso, Elastic Net, Random Forest~\cite{breiman2001} and Gradient Boosting~\cite{friedman2001}. Classification candidates (for direction and risk): logistic regression, KNN, SVM (RBF), Random Forest, AdaBoost~\cite{freund1997} and Gradient Boosting. Grid Search was used for the low-dimensional spaces (linear models, KNN, SVM, AdaBoost) and Random Search~\cite{bergstra2012} with 15 draws for the ensembles. Final models are chosen by the cross-validation score, never by the test score.
 
 \subsection{Results}
-Tables~\ref{tab:clf} and~\ref{tab:reg} report the test metrics. In direction classification, linear models, KNN and SVM fall at or below chance (AUC 0.47--0.50) even though their cross-validation AUC was about 0.56: their apparent signal did not survive the change of period. Only the ensembles keep a positive edge (AUC 0.54--0.57), which indicates non-linear interactions among drivers. The same pattern holds for risk (AUC up to 0.586) and for regression, where Gradient Boosting lowers the random-walk RMSE by 2.4\% and Random Forest attains 54.6\% directional accuracy. Direction accuracy at the 0.5 threshold (53.2\%) is still below the majority class (54.6\%, a period in which the peso appreciated), a limitation discussed in Section~\ref{sec:disc}.
+Tables~\ref{tab:clf} and~\ref{tab:reg} report the test metrics. In direction classification, linear models, KNN and SVM fall at or below chance (AUC 0.47--0.50) even though their cross-validation AUC was about 0.56: their apparent signal did not survive the change of period. Only the ensembles keep a positive edge (AUC 0.54--0.57), which indicates non-linear interactions among drivers. The Random Forest, selected by its cross-validation AUC (0.582), reaches a test AUC of 0.555, an accuracy of 53.2\% and an F1 of 0.514; Gradient Boosting had a slightly higher test AUC (0.566). For risk (an alert for a move larger than 0.86\%), the Random Forest reaches a test AUC of 0.585. In regression, the Random Forest has an RMSE of 0.00759 versus 0.00769 for the random walk (1.3\% lower) and an $R^2$ of 0.017. Direction accuracy at the 0.5 threshold is still below the majority class (54.6\%, a period in which the peso appreciated), a limitation discussed in Section~\ref{sec:disc}.
 
 \begin{table}[t]
 \caption{Test results: classification (432 days)}
@@ -156,9 +157,9 @@ Model & CV AUC & AUC & Acc. & CV AUC & AUC \\
 Logistic & 0.559 & 0.497 & 0.519 & 0.599 & 0.549 \\
 KNN & 0.565 & 0.474 & 0.486 & 0.597 & 0.571 \\
 SVM & 0.557 & 0.490 & 0.484 & 0.595 & 0.562 \\
-Random Forest & \textbf{0.582} & 0.555 & 0.532 & \textbf{0.623} & 0.585 \\
+Random Forest (selected) & \textbf{0.582} & 0.555 & 0.532 & \textbf{0.623} & 0.585 \\
 AdaBoost & 0.562 & 0.541 & 0.521 & 0.600 & 0.557 \\
-Gradient Boost. & 0.578 & \textbf{0.566} & 0.532 & 0.615 & \textbf{0.586} \\
+Gradient Boost. & 0.578 & 0.566 & 0.532 & 0.615 & 0.586 \\
 \midrule
 Baseline & -- & 0.500 & 0.546 & -- & 0.500 \\
 \bottomrule
@@ -180,8 +181,8 @@ Poly(2)+Ridge & 0.764 & 0.993 & 0.004 & 0.500 \\
 Ridge & 0.767 & 0.997 & $-0.004$ & 0.493 \\
 Lasso & 0.765 & 0.995 & 0.000 & 0.502 \\
 Elastic Net & 0.765 & 0.994 & 0.002 & 0.491 \\
-Random Forest & 0.759 & 0.987 & 0.017 & \textbf{0.546} \\
-Gradient Boost. & \textbf{0.751} & \textbf{0.976} & \textbf{0.038} & 0.542 \\
+Random Forest (selected) & \textbf{0.759} & \textbf{0.987} & \textbf{0.017} & \textbf{0.546} \\
+Gradient Boost. & 0.751 & 0.976 & 0.038 & 0.542 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -197,17 +198,29 @@ TreeSHAP on the Random Forest direction model (Fig.~\ref{fig:shap}) ranks the sp
 \end{figure}
 
 \subsection{Decision-Oriented Evaluation}
-Statistical metrics do not say whether the model helps a user. We simulated a household that receives USD~1{,}000 per day and either sells at the current TRM or waits one day when $P(\text{up})>\tau$. Over the test period (Fig.~\ref{fig:backtest}), the Random Forest rule with $\tau=0.5$ earns on average 383 COP per day relative to always selling at once, and 624 COP with $\tau=0.55$; Gradient Boosting earns 495 and 1{,}832 COP, respectively. A random wait-or-sell decision \emph{loses} 1{,}383 COP per day, because the peso appreciated during the test period, and a perfect oracle would earn 9{,}994 COP. The gains are small but positive and robust to the threshold. For the risk alert, a probability threshold chosen on the last training fold so that the alert rate matches the historical frequency yields a test precision of 30.1\% versus a base rate of 22.5\% (lift 1.34) with 25.8\% recall. The Random Forest probabilities are slightly better calibrated than the base rate (Brier 0.247 vs.\ 0.249).
+Statistical metrics do not say whether the model helps a user. The web page puts the question ``do I buy the iPhone today or wait until tomorrow?'' at its center: the importer picks an iPhone model and gets its cost in pesos at today's TRM and at the TRM expected for tomorrow, adding the parcel-forwarding fee, the bank's surcharge over the TRM and taxes to Apple's dollar price (example parameters kept in a configuration file). The rule recommends \emph{waiting} if $P(\text{down})\geq 55\%$ and the day's K-Means regime is not Crisis; otherwise, \emph{buying today}. In the backtest (Table~\ref{tab:regla}), on every test day the importer must pay USD~1{,}000 and decides whether to pay today or wait until the next day. The rule recommended waiting on 101 of 432 days and was right 63.4\% of those times; averaged over all days, it saved 2{,}314.7 COP per USD~1{,}000, versus 1{,}383.3 COP for waiting at random (1{,}000 simulations) and 12{,}701.5 COP for an oracle that knows the future. The result must be read with caution: the test period was one of peso appreciation, so waiting at random also saved money. For the risk alert, a probability threshold chosen on the last training fold so that the alert rate matches the historical frequency yields a test precision of 30.1\% versus a base rate of 22.5\% (lift 1.34) with 25.8\% recall. The Random Forest probabilities barely improve on the calibration of the base rate (Brier 0.2474 vs.\ 0.2492).
 
-\begin{figure}[t]
+\begin{table}[t]
+\caption{Backtest of the importer rule (432 test days)}
+\label{tab:regla}
 \centering
-\includegraphics[width=\columnwidth]{decision_backtest.png}
-\caption{Cumulative gain of the remittance-household rule (Random Forest, $\tau=0.5$) versus always selling immediately.}
-\label{fig:backtest}
-\end{figure}
+\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Rule & Wait days & Hit rate & Saving/day \\
+\midrule
+P(down) $\geq$ 0.50 & 212 & 58.0\% & 3{,}089.9 \\
+P(down) $\geq$ 0.55 (used) & 101 & 63.4\% & 2{,}314.7 \\
+P(down) $\geq$ 0.60 & 38 & 60.5\% & 995.2 \\
+Wait at random & -- & -- & 1{,}383.3 \\
+Oracle & -- & -- & 12{,}701.5 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}{\footnotesize Mean saving in COP per USD~1{,}000 per day.}
+\end{table}
 
 \subsection{Model Selection}
-Random Forest was selected for direction, risk and regression because it has the best cross-validation score in two of the three tasks, it is never far from the best test result, and a single model family simplifies maintenance and explanation. The randomized search of each ensemble takes 60--77~s on a laptop, and serving the three models takes about 0.5~s per request on a \texttt{t3.micro}. Gradient Boosting is kept as a documented alternative, as it reached slightly better test scores.
+Random Forest was selected for direction, risk and regression because it has the best cross-validation score in two of the three tasks, it is never far from the best test result, and a single model family simplifies maintenance and explanation. The randomized search of each ensemble takes 60--77~s on a laptop, and serving the three models takes about 0.5~s per request on a \texttt{t3.micro}. Gradient Boosting is kept as a documented alternative, as it reached a slightly higher test AUC for direction (0.566), but it was not selected because selection relies on cross-validation.
 
 \section{Cloud Architecture and Deployment}
 \subsection{Service and Deployment Models}
@@ -284,7 +297,7 @@ Instances & Req/s & p50 (s) & p95 (s) \\
 S3 versioning protects against accidental deletion, and cross-region replication copied the 1.6~MB historical bundle and the 12~MB model to us-west-2 within minutes. RDS keeps seven days of automated backups with point-in-time recovery. Since all data can be re-ingested from public sources and all infrastructure is code, the strategy is \emph{backup and restore}~\cite{aws_wellarchitected} with RPO $\approx$ 24~h and RTO $<$ 1~h: \texttt{terraform apply} with \texttt{region=us-west-2} recreates the stack and the backfill reloads the database in about 2 minutes (14~s ingestion and 109~s ETL measured).
 
 \subsection{Cost Analysis}
-Table~\ref{tab:cost} compares the on-demand estimate with the observed usage. The dominant costs are the ALB, the public IPv4 addresses and the always-on EC2 and RDS instances; S3, Lambda, EventBridge and SSM are negligible. Avoiding a NAT gateway saves about USD~33 per month. Because the stack is created and destroyed with Terraform, the expected cost of the whole semester (about 40 development hours, one day of tests and one week of operation for the defense) is about USD~21. The deployment used for the experiments ran for about two days at an estimated USD~2 per day; AWS Cost Explorer reports charges with a delay of about 24~h, so the billed amount is added to the repository (\texttt{docs/costos.md}) once it is consolidated.
+Table~\ref{tab:cost} compares the on-demand estimate with the observed usage. The dominant costs are the ALB, the public IPv4 addresses and the always-on EC2 and RDS instances; S3, Lambda, EventBridge and SSM are negligible. Avoiding a NAT gateway saves about USD~33 per month. Because the stack is created and destroyed with Terraform, the expected cost of the whole semester (about 40 development hours, one day of tests and one week of operation for the defense) is about USD~21 for the whole semester, versus about USD~63.6 per month if left running 24/7. According to AWS Cost Explorer, the actual spend of the project account from September to November 2026 was USD~202.02, of which USD~179.98 was covered by credits; it exceeded the per-session estimate because the infrastructure stayed on continuously (details in \texttt{docs/costos.md}).
 
 \begin{table}[t]
 \caption{Monthly cost estimate (USD, on-demand, us-east-1, 24/7)}
@@ -318,17 +331,19 @@ Serverless alternative (API Gateway + Lambda) & $<$ 5 \\
 \label{fig:dash}
 \end{figure}
 
-The deployed system works end to end: the historical backfill loaded 2{,}321 TRM records and 26{,}682 market observations into RDS, the daily schedule refreshes them after each publication, and the dashboard (Fig.~\ref{fig:dash}) and REST API (\texttt{/api/predict}, \texttt{/api/scenario}, \texttt{/api/history}, \texttt{/api/model}) answer from both availability zones. The \emph{scenario simulator} lets a user ask, for instance, how the probability of a rise changes if oil falls 3\% and the DXY rises 0.5\%. Code, data set, trained model and Terraform scripts are available in the public repository~\cite{repo}.
+The deployed system works end to end: the historical backfill loaded 2{,}321 TRM records and 26{,}682 market observations into RDS, the daily schedule refreshes them after each publication, and the dashboard (Fig.~\ref{fig:dash}) and REST API (\texttt{/api/predict}, \texttt{/api/scenario}, \texttt{/api/history}, \texttt{/api/model} and the importer module) answer from both availability zones. The \emph{scenario simulator} lets a user ask, for instance, how the probability of a rise changes if oil falls 3\% and the DXY rises 0.5\%. Code, data set, trained model and Terraform scripts are available in the public repository~\cite{repo}.
 
 \section{Discussion and Limitations}
 \label{sec:disc}
-The results confirm the difficulty documented since Meese and Rogoff~\cite{meese1983}: the predictable component of daily FX moves is small and unstable. Three lessons follow. First, cross-validation alone was misleading: every model had a CV AUC near 0.56--0.58, but only the ensembles kept an edge on a later, unseen period; a strictly chronological test set was essential. Second, the most useful feature (spot--TRM gap) comes from domain understanding of how the TRM is computed rather than from model complexity. Third, decision-oriented metrics make modest statistical gains interpretable for users. Limitations: the test period was dominated by peso appreciation, so accuracy at the 0.5 threshold is below the majority class; the news-sentiment index lacks history; Yahoo Finance is an unofficial source; and the 2017 start date of crypto data shortens the sample.
+The results confirm the difficulty documented since Meese and Rogoff~\cite{meese1983}: the predictable component of daily FX moves is small and unstable. Three lessons follow. First, cross-validation alone was misleading: every model had a CV AUC near 0.56--0.58, but only the ensembles kept an edge on a later, unseen period; a strictly chronological test set was essential. Second, the most useful feature (spot--TRM gap) comes from domain understanding of how the TRM is computed rather than from model complexity. Third, decision-oriented metrics make modest statistical gains interpretable for users. Limitations: the test period was dominated by peso appreciation, so accuracy at the 0.5 threshold is below the majority class and waiting at random also saved money; the model predicts the TRM, not the iPhone price, and the forwarding fee, bank surcharge and taxes are example parameters; validation with real importers is pending; the news-sentiment index lacks history; Yahoo Finance is an unofficial source; and the 2017 start date of crypto data shortens the sample.
 
 \section{Conclusions and Future Work}
-TRM Predict integrates a complete data-mining pipeline, an honestly evaluated set of machine-learning models and a scalable, highly available AWS architecture defined as code into one working product aligned with SDGs 8 and 10. Ensembles were the only models with out-of-sample value, and their signal translates into small but positive gains for a remittance household. Future work: probability calibration and cost-sensitive thresholds, adding the accumulated sentiment index and the policy-rate differential, walk-forward retraining scheduled in the cloud, and a serverless version of the API to cut the cost below USD~5 per month.
+TRM Predict integrates a complete data-mining pipeline, an honestly evaluated set of machine-learning models and a scalable, highly available AWS architecture defined as code into one working product aligned with SDGs 8 and 9. Ensembles were the only models with out-of-sample value, albeit modest: the Random Forest improves on the random walk by only 1.3\% in RMSE. The importer rule was right 63.4\% of the times it recommended waiting and saved on average 2{,}314.7 COP per USD~1{,}000 per day, versus 1{,}383.3 COP at random, in a period of peso appreciation. Future work: evaluating the rule in periods of peso depreciation, validating the module with iPhone importers, probability calibration and cost-sensitive thresholds, adding the accumulated sentiment index and the policy-rate differential, walk-forward retraining scheduled in the cloud, and a serverless version of the API to cut the cost below USD~5 per month.
+
+\section*{Acknowledgment}
+The authors thank their professors Ivan Mariño and Zalma Valentina Galeano for their guidance throughout the project.
 
 \begin{thebibliography}{99}
-\bibitem{banrep_remesas} Banco de la Rep\'ublica de Colombia, ``Ingresos de remesas de trabajadores en Colombia,'' Estad\'isticas del sector externo, 2025. [Online]. Available: \url{https://www.banrep.gov.co}
 \bibitem{un2015} United Nations, ``Transforming our world: The 2030 Agenda for Sustainable Development,'' A/RES/70/1, 2015.
 \bibitem{meese1983} R. A. Meese and K. Rogoff, ``Empirical exchange rate models of the seventies: Do they fit out of sample?'' \emph{J. Int. Econ.}, vol. 14, no. 1--2, pp. 3--24, 1983.
 \bibitem{henrique2019} B. M. Henrique, V. A. Sobreiro, and H. Kimura, ``Literature review: Machine learning techniques applied to financial market prediction,'' \emph{Expert Syst. Appl.}, vol. 124, pp. 226--251, 2019.
@@ -336,6 +351,7 @@ TRM Predict integrates a complete data-mining pipeline, an honestly evaluated se
 \bibitem{lundberg2017} S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model predictions,'' in \emph{Adv. Neural Inf. Process. Syst. (NeurIPS)}, vol. 30, 2017, pp. 4765--4774.
 \bibitem{ribeiro2016} M. T. Ribeiro, S. Singh, and C. Guestrin, ```Why should I trust you?': Explaining the predictions of any classifier,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf. Knowl. Discov. Data Min.}, 2016, pp. 1135--1144.
 \bibitem{fayyad1996} U. Fayyad, G. Piatetsky-Shapiro, and P. Smyth, ``From data mining to knowledge discovery in databases,'' \emph{AI Mag.}, vol. 17, no. 3, pp. 37--54, 1996.
+\bibitem{brown2008} T. Brown, ``Design thinking,'' \emph{Harvard Bus. Rev.}, vol. 86, no. 6, pp. 84--92, 2008.
 \bibitem{wirth2000} R. Wirth and J. Hipp, ``CRISP-DM: Towards a standard process model for data mining,'' in \emph{Proc. 4th Int. Conf. Pract. Appl. Knowl. Discov. Data Min.}, 2000, pp. 29--39.
 \bibitem{ester1996} M. Ester, H.-P. Kriegel, J. Sander, and X. Xu, ``A density-based algorithm for discovering clusters in large spatial databases with noise,'' in \emph{Proc. 2nd Int. Conf. Knowl. Discov. Data Min. (KDD)}, 1996, pp. 226--231.
 \bibitem{agrawal1994} R. Agrawal and R. Srikant, ``Fast algorithms for mining association rules,'' in \emph{Proc. 20th Int. Conf. Very Large Data Bases (VLDB)}, 1994, pp. 487--499.
@@ -348,7 +364,7 @@ TRM Predict integrates a complete data-mining pipeline, an honestly evaluated se
 \bibitem{nist800145} P. Mell and T. Grance, ``The NIST definition of cloud computing,'' NIST, Gaithersburg, MD, USA, Special Publication 800-145, 2011.
 \bibitem{terraform_aws} HashiCorp, ``Terraform AWS provider documentation,'' 2026. [Online]. Available: \url{https://registry.terraform.io/providers/hashicorp/aws/latest/docs}
 \bibitem{aws_wellarchitected} Amazon Web Services, ``Disaster recovery of workloads on AWS: Recovery in the cloud,'' AWS Whitepaper, 2021. [Online]. Available: \url{https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/}
-\bibitem{repo} S. Cubides, N. Vergara, and E. Ruiz, ``TRM Predict,'' GitHub repository, 2026. [Online]. Available: \url{https://github.com/Sebas-409/proyecto-integrador-trm}
+\bibitem{repo} E. A. Ruiz Salazar, J. N. Vergara Rojas, and K. S. Cubides Velandia, ``TRM Predict,'' GitHub repository, 2026. [Online]. Available: \url{https://github.com/Sebas-409/proyecto-integrador-trm}
 \end{thebibliography}
 
 \end{document}

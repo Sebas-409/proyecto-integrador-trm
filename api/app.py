@@ -32,7 +32,7 @@ MARKETS = list(YAHOO_SYMBOLS) + list(BINANCE_SYMBOLS)
 CACHE_SECONDS = 600
 
 app = FastAPI(title="TRM Predict API", version="1.0.0",
-              description="Analítica predictiva en la nube para anticipar el riesgo cambiario de los importadores de "
+              description="Sistema en la nube para anticipar el riesgo cambiario en compras de "
                           "iPhone en Colombia: dirección y valor de la TRM (COP/USD) del siguiente día hábil.")
 _state = {"bundle": None, "features": None, "loaded_at": 0.0}
 

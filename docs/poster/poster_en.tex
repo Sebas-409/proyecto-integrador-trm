@@ -1,11 +1,12 @@
-% Póster A1 (594 x 841 mm, vertical) en inglés. Compilar con: tectonic poster_en.tex
+% Póster A1 (594 x 841 mm, vertical) en inglés: traducción del póster oficial de Canva
+% ("TRM PREDICT POSTER", 2026-11-26). Compilar con: tectonic poster_en.tex
 \documentclass{article}
 \usepackage[paperwidth=594mm,paperheight=841mm,margin=0mm]{geometry}
 \usepackage{fontspec}
 \setmainfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
 \usepackage{xcolor,graphicx,tikz,tabularx,booktabs,qrcode,enumitem,array}
 \usepackage[most]{tcolorbox}
-\graphicspath{{fig/}{../}}
+\graphicspath{{fig/}{../}{../../reports/figures/}}
 
 \definecolor{navy}{HTML}{0B2545}
 \definecolor{teal}{HTML}{1B7F79}
@@ -19,21 +20,20 @@
 \setlength{\parskip}{0.55em}
 \color{ink}
 
-\newcommand{\body}{\fontsize{23}{30}\selectfont}
-\newcommand{\figcap}[1]{\par\vspace{0.2em}{\fontsize{19}{24}\selectfont\color{muted}#1\par}}
+\newcommand{\body}{\fontsize{22}{29}\selectfont}
+\newcommand{\figcap}[1]{\par\vspace{0.2em}{\fontsize{18}{23}\selectfont\color{muted}#1\par}}
 
 % Encabezado de sección: número + título + filete
 \newcommand{\sect}[2]{%
   \par\vspace{0.7em}%
-  {\fontsize{34}{40}\selectfont\bfseries\color{teal}#1\hspace{0.4em}\color{navy}#2\par}%
+  {\fontsize{32}{38}\selectfont\bfseries\color{teal}#1\hspace{0.4em}\color{navy}#2\par}%
   \vspace{0.15em}{\color{amber}\rule{\linewidth}{3pt}}\par\vspace{0.3em}}
 
-% Cifra destacada
-\newcommand{\kpi}[2]{%
-  \begin{minipage}[t]{0.158\linewidth}\centering
-    {\fontsize{56}{60}\selectfont\bfseries\color{amber}#1\par}\vspace{0.25em}
-    {\fontsize{19}{23}\selectfont\color{white}#2\par}
-  \end{minipage}}
+% Recuadro de apoyo
+\newcommand{\note}[2]{%
+  \begin{tcolorbox}[enhanced,colback=white,colframe=teal,arc=3mm,boxrule=1.2pt,left=4mm,right=4mm,top=3mm,bottom=3mm]
+  {\bfseries\color{navy}#1\par}\vspace{0.2em}#2
+  \end{tcolorbox}}
 
 \setlist[itemize]{leftmargin=1.1em,itemsep=0.25em,topsep=0.2em,label={\color{teal}\textbullet}}
 
@@ -42,23 +42,23 @@
 
 % ---------------- Encabezado ----------------
 \begin{tikzpicture}[remember picture,overlay]
-  \fill[navy] (current page.north west) rectangle ([yshift=-150mm]current page.north east);
-  \fill[amber] ([yshift=-150mm]current page.north west) rectangle ([yshift=-153mm]current page.north east);
+  \fill[navy] (current page.north west) rectangle ([yshift=-160mm]current page.north east);
+  \fill[amber] ([yshift=-160mm]current page.north west) rectangle ([yshift=-163mm]current page.north east);
   \fill[navy] (current page.south west) rectangle ([yshift=24mm]current page.south east);
 \end{tikzpicture}
 
 \vspace*{16mm}
 \noindent\hspace*{24mm}\begin{minipage}[t]{546mm}
 \begin{minipage}[t]{440mm}
-  {\fontsize{24}{28}\selectfont\color{amber}\bfseries INTEGRATIVE PROJECT \,·\, DATA MINING \,·\, MACHINE LEARNING \,·\, CLOUD COMPUTING\par}
+  {\fontsize{24}{28}\selectfont\color{amber}\bfseries DATA MINING \,·\, MACHINE LEARNING \,·\, CLOUD COMPUTING\par}
   \vspace{6mm}
   {\fontsize{84}{90}\selectfont\bfseries\color{white}TRM Predict\par}
   \vspace{3mm}
-  {\fontsize{40}{48}\selectfont\color{white}A cloud-native predictive analytics system for\\ exchange-rate risk decisions in Colombia\par}
+  {\fontsize{38}{46}\selectfont\color{white}A cloud-based system to anticipate exchange-rate\\ risk in iPhone purchases in Colombia\par}
   \vspace{7mm}
-  {\fontsize{27}{33}\selectfont\color{white}\bfseries Sebastián Cubides \quad Nicolás Vergara \quad Edgar Ruiz\par}
+  {\fontsize{24}{30}\selectfont\color{white}\bfseries Students: Edgar Andrés Ruiz Salazar \,·\, Juan Nicolás Vergara Rojas \,·\, Kevin Sebastián Cubides Velandia\par}
   \vspace{1mm}
-  {\fontsize{23}{29}\selectfont\color{white!80!navy}Data Engineering and Artificial Intelligence, 5th semester \,·\, Universidad Santo Tomás, Tunja \,·\, 2026-2\par}
+  {\fontsize{21}{27}\selectfont\color{white!80!navy}Advisors: Ivan Mariño \,·\, Zalma Valentina Galeano \,·\, Faculty of Data Engineering and Artificial Intelligence --- Universidad Santo Tomás, Tunja\par}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{90mm}\centering
@@ -68,100 +68,112 @@
   {\fontsize{18}{22}\selectfont\color{white}Code, data and Terraform\par}
 \end{minipage}
 
-% ---------------- Cifras clave ----------------
-\vspace{18mm}
-\begin{tcolorbox}[enhanced,width=\linewidth,colback=navy,colframe=navy,arc=4mm,boxrule=0pt,
-  left=6mm,right=6mm,top=7mm,bottom=7mm]
-  \kpi{2,159}{trading days,\\ 43 leakage-free features}\hfill
-  \kpi{19}{models tuned with\\ time-series CV}\hfill
-  \kpi{0.586}{test ROC-AUC for\\ large-move risk}\hfill
-  \kpi{+383}{COP/day per USD 1,000\\ for a remittance household}\hfill
-  \kpi{100\%}{availability while\\ a server is killed}\hfill
-  \kpi{+84\%}{throughput after\\ auto-scaling 2\,→\,4}
-\end{tcolorbox}
-
 % ---------------- Cuerpo en tres columnas ----------------
-\vspace{2mm}
+\vspace{22mm}
 % ===== Columna 1 =====
 \begin{minipage}[t]{174mm}\body
 
-\sect{1}{The problem}
-Colombian households received about \textbf{USD 11.8 billion} in remittances in 2024, and thousands of small importers pay in dollars. Both convert at the official exchange rate (\textbf{TRM}) without the analytics of large firms.
+\sect{01}{Introduction and problem}
+Small importers in Colombia sell iPhones in pesos (COP) and pay for them in dollars (USD) in the U.S., bearing the exchange-rate risk between the quote and the payment without access to financial hedging.
 
-\textbf{Question:} can public market data say, one business day ahead, whether the TRM will rise and whether a large move is coming, and can that be served reliably and cheaply in the cloud?
-\figcap{Aligned with SDG 8 (target 8.10, access to financial services) and SDG 10 (target 10.c, remittance costs).}
+TRM Predict turns daily public data into a short-term, actionable signal: \textbf{BUY TODAY} or \textbf{WAIT} for the next business day.
 
-\sect{2}{Data and pipeline}
-A CRISP-DM pipeline integrates four sources, refreshed every weekday by a serverless job:
+\note{Contribution to the Sustainable Development Goals}{%
 \begin{itemize}
-  \item Official TRM (datos.gov.co API, since 1991)
-  \item 8 markets: Brent, DXY, US 10Y, VIX, S\&P 500, MXN, BRL, spot USD/COP (Yahoo)
-  \item BTC and ETH daily candles (Binance)
-  \item FX news sentiment, \textbf{web-scraped} from \emph{La República}
+  \item \textbf{SDG 8:} decent work and economic growth (small businesses).
+  \item \textbf{SDG 9:} industry, innovation and cloud infrastructure.
+\end{itemize}}
+\figcap{A quantitative decision-support tool; it is not financial advice.}
+
+\sect{02}{Data acquisition and preparation}
+\begin{itemize}
+  \item \textbf{Time coverage:} 2,159 business days (Sep.\ 2017 -- Oct.\ 2026) with 43 engineered features and no missing values.
+  \item \textbf{Multivariate sources:} official TRM (datos.gov.co), 8 global indicators (Yahoo Finance), BTC/ETH (Binance) and financial news (La República).
+  \item \textbf{Feature engineering:} lagged returns, rolling volatility (5 and 20 days), calendar variables and outlier control (3$\times$IQR).
 \end{itemize}
-A strict as-of join uses only market closes \emph{before} each TRM date, so no future information leaks into the features.
+
+\note{KDD / CRISP-DM flow and pattern mining}{%
+Selection $\rightarrow$ cleaning $\rightarrow$ transformation $\rightarrow$ EDA $\rightarrow$ modeling $\rightarrow$ evaluation.
+\begin{itemize}
+  \item \textbf{Segmentation and rules:} PCA, K-Means ($k=4$ regimes), DBSCAN (57 anomalous days) and Apriori / FP-Growth (91 rules; max.\ lift 1.24).
+\end{itemize}}
 
 \includegraphics[width=\linewidth]{trm_series.png}
-\figcap{TRM and 20-day volatility, Sep. 2017 to Oct. 2026. Red: days in the high-volatility regime found by clustering. Shaded: the 432 test days, never used for training.}
-
-\sect{3}{Data mining}
-\begin{itemize}
-  \item \textbf{PCA + K-Means / Ward:} 3 market regimes. In risk-off days the TRM rises next day 52.9\% of the time; in risk-on days, 44.3\%.
-  \item \textbf{DBSCAN} flags \textbf{57 anomalous days} (45 in 2020), with 1.7$\times$ the normal next-day volatility.
-  \item \textbf{Apriori = FP-Growth:} 91 rules, e.g.\\ \emph{BRL up \& MXN up \& VIX up $\Rightarrow$ TRM up} (confidence 0.60, lift 1.24).
-\end{itemize}
+\figcap{Official TRM, Sep.\ 2017 to Oct.\ 2026. Shaded: the 432 test days, never used for training.}
 \end{minipage}%
 \hspace{12mm}%
 % ===== Columna 2 =====
 \begin{minipage}[t]{174mm}\body
 
-\sect{4}{Machine learning}
-Three tasks for the next business day: \textbf{direction} (up/down), \textbf{risk} (move larger than the 75th percentile, 0.86\%) and \textbf{return} (regression). 19 models were tuned with Grid/Random Search inside a 5-fold \texttt{TimeSeriesSplit} and chosen by CV score only.
+\sect{03}{Methodology and models}
+Overall framework based on Design Thinking, with prototyping under KDD / CRISP-DM. Strict chronological split: 1,727 training days and 432 test days (Dec.\ 2024 -- Oct.\ 2026) with time-series cross-validation.
 
-\centerline{\includegraphics[width=0.9\linewidth]{model_auc.png}}
-\figcap{Out-of-sample ROC-AUC. Linear, KNN and SVM models fall to chance; only tree ensembles keep a signal.}
+{\centering\fontsize{19}{24}\selectfont\bfseries\color{navy}
+Public data (APIs + scraping) $\rightarrow$ Features (43) $\rightarrow$ Training and test (time CV) $\rightarrow$ Product (API + dashboard)\par}
 
 \begin{itemize}
-  \item Regression: Gradient Boosting RMSE \textbf{2.4\% below the random walk}; Random Forest gets the sign right 54.6\% of the time.
-  \item Selected: \textbf{Random Forest} for all three tasks (best CV in 2 of 3, one family to maintain).
+  \item \textbf{Tasks:} daily direction, expected return and large-move alert ($>0.86\%$).
+  \item \textbf{Models:} logistic regression, k-NN, SVM, Random Forest, AdaBoost and Gradient Boosting, explained with SHAP/LIME.
+  \item \textbf{Direction:} Random Forest selected by CV (0.582). Gradient Boosting reached a slightly higher test AUC (0.566).
 \end{itemize}
 
-\sect{5}{Why the model decides}
-\centerline{\includegraphics[width=0.9\linewidth]{shap_top10.png}}
-\figcap{TreeSHAP importance. The engineered spot--TRM gap ranks first: the TRM averages the day's trades, so a spot quote above it anticipates a rise.}
+\centerline{\includegraphics[width=0.9\linewidth]{model_auc.png}}
+\figcap{Out-of-sample ROC-AUC by model.}
 
-\sect{6}{Does it help a user?}
-A household receiving USD 1,000 a day sells at once, or waits one day when $P(\text{up})>0.5$.
-\includegraphics[width=\linewidth]{backtest.png}
-\figcap{Test period. Model: +383 COP/day (+624 with threshold 0.55). Random choice: $-$1,383 COP/day. The risk alert has 30.1\% precision vs.\ a 22.5\% base rate (lift 1.34).}
+\note{Return regression}{%
+Random Forest RMSE: 0.00759 \,·\, random walk: 0.00769 \,·\, $R^2$: 0.017.\\
+A 1.3\% RMSE improvement over assuming tomorrow equals today.}
+
+\note{Interpretability with SHAP and LIME}{%
+The most influential variables are the USD/COP--TRM gap (spot\_gap), the lagged TRM return (lag 1) and the change in the dollar index (DXY). It supports the decision without replacing financial judgment.}
+
+\sect{04}{Results and analysis}
+\textbf{Test performance (432 days)}
+\begin{itemize}
+  \item Direction model (RF): AUC 0.555 \,|\, accuracy 53.2\% \,|\, F1 0.514.
+  \item Majority baseline: 54.6\% \,|\, Brier score: 0.2474.
+  \item Risk alert model ($>0.86\%$): AUC 0.585.
+\end{itemize}
+\textbf{K-Means regimes ($k=4$):} Calm (752 d), Risk appetite (754 d), Risk aversion (606 d) and Crisis (47 d). Silhouette = 0.116.
+
+\textbf{Historical backtest:} with $P(\text{down})\geq 55\%$ the rule recommended WAIT on 101/432 days with 63.4\% accuracy. Mean saving: COP 2,314.7 per USD 1,000 per day (vs.\ COP 1,383.3 at random).
 \end{minipage}%
 \hspace{12mm}%
 % ===== Columna 3 =====
 \begin{minipage}[t]{174mm}\body
 
-\sect{7}{Architecture on AWS}
-\includegraphics[width=\linewidth]{arquitectura_en.png}
-\figcap{64 resources in Terraform. Lambda ingestion and ETL, S3 data lake replicated to us-west-2, RDS PostgreSQL, and a Docker FastAPI behind an ALB with an Auto Scaling group across two availability zones.}
+\sect{05}{Cloud architecture and validation}
+{\centering\fontsize{19}{24}\selectfont\bfseries\color{navy}
+EventBridge (schedule) $\rightarrow$ Lambda (ingestion / ETL) $\rightarrow$ S3 (raw data + replica) $\rightarrow$ RDS PostgreSQL $\rightarrow$ EC2 + ALB (FastAPI / ASG)\par}
 
-\sect{8}{Cloud experiments}
-\includegraphics[width=\linewidth]{ha_poster.png}
-\figcap{One instance terminated at $t=30$\,s. With an ASG minimum of 1 the site was down for 109\,s; with one instance per zone, \textbf{0 of 378} requests failed.}
-
-\includegraphics[width=\linewidth]{load_poster.png}
-\figcap{16 concurrent clients for 14 min. Target tracking at 60\% CPU scales 2\,→\,4: 4.1\,→\,7.6 req/s, median latency 4.0\,→\,1.6\,s, \textbf{0 errors in 4,543} requests.}
-
-\sect{9}{Cost and conclusions}
-About \textbf{USD 64/month} on demand (ALB, EC2, public IPv4 and RDS dominate); no NAT gateway saves USD 33. Created and destroyed with Terraform, the whole semester costs about \textbf{USD 21}.
+Infrastructure as code (Terraform): AWS Lambda, EventBridge, S3 (CRR), RDS PostgreSQL, EC2, ALB, Auto Scaling, ECR, CloudWatch, SSM and Budgets.
 \begin{itemize}
-  \item Daily FX is hard to predict, but a small, honest edge can still beat random decisions.
-  \item High availability needs the right \emph{scaling policy}, not only two zones.
+  \item \textbf{Load test:} 4,543 requests in 14 min with 0 errors (auto-scaling up to 4 EC2 instances).
+  \item \textbf{High availability:} 100\% success (378/378 probes) with 2 instances; full recovery in 139 s.
+  \item \textbf{AWS operating cost:} estimated USD 21 for the whole semester running in sessions (USD 63.6/month always on). Actual spend (Sep.--Nov.\ 2026): USD 202.02 (USD 179.98 covered by credits).
 \end{itemize}
+
+\note{Use case: the importer's decision}{%
+Computes today's and tomorrow's cost in COP from the Apple price, parcel-forwarding fee, bank surcharge and taxes, recommending WAIT when $P(\text{down})\geq 55\%$ outside a crisis.}
+
+\sect{06}{Conclusions and limitations}
+\begin{itemize}
+  \item \textbf{End-to-end integration:} automated ingestion, explainable ML, REST API, web dashboard and AWS infrastructure as code.
+  \item \textbf{Moderate predictive power:} directional accuracy (53.2\%) does not beat the majority baseline (54.6\%), and the regression lowers RMSE by 1.3\% against the random walk.
+  \item \textbf{Regime sensitivity:} the rule reached 63.4\% accuracy in a test period dominated by a falling dollar.
+  \item \textbf{Future work:} live news sentiment, real card and parcel-forwarding fees, and validation in rising periods.
+\end{itemize}
+
+\note{Practical contribution}{An accessible prototype that turns daily public FX data into a COP cost comparison and a transparent buy/wait signal for small importers.}
+\note{Responsible use}{Predictions are probabilistic and do not include every bank, card, parcel-forwarding or tax charge. Check real rates before operating.}
+\note{Next steps}{Walk-forward evaluation across exchange-rate regimes, probability calibration and field validation with real importers.}
+\note{Cloud learning}{Terraform makes deployments reproducible; load and failure tests validate elasticity and resilience, while cost control is key.}
 \end{minipage}
 \end{minipage}
 
 % ---------------- Pie ----------------
 \begin{tikzpicture}[remember picture,overlay]
-  \node[anchor=west,text=white,font=\fontsize{18}{22}\selectfont] at ([xshift=24mm,yshift=12mm]current page.south west)
-    {References: Meese \& Rogoff (1983) \,·\, Breiman (2001) \,·\, Friedman (2001) \,·\, Lundberg \& Lee (2017) \,·\, Ester et al. (1996) \,·\, Agrawal \& Srikant (1994)};
+  \node[anchor=west,text=white,font=\fontsize{16}{20}\selectfont,text width=550mm] at ([xshift=24mm,yshift=12mm]current page.south west)
+    {07 References (IEEE): [1] Superintendencia Financiera de Colombia, TRM --- Datos Abiertos (32sa-8pi3), 2026 \,·\, [2] Meese \& Rogoff, J.\ Int.\ Econ.\ 14, 1983 \,·\, [3] Breiman, Mach.\ Learn.\ 45(1), 2001 \,·\, [4] Wirth \& Hipp, CRISP-DM, PAKDD 2000 \,·\, [5] Mell \& Grance, NIST SP 800-145, 2011};
 \end{tikzpicture}
 \end{document}

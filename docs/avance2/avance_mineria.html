@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Avance Minería de Datos - TRM Predict</title>
+<link rel="stylesheet" href="estilo.css"></head><body>
+
+<h1>TRM Predict: sistema en la nube para anticipar el riesgo cambiario en compras de iPhone en Colombia · avance de Minería de Datos</h1>
+<p class="sub">Proyecto integrador, V semestre. Universidad Santo Tomás, Tunja. Noviembre de 2026.<br>
+Repositorio: github.com/Sebas-409/proyecto-integrador-trm</p>
+
+<h2>1. De qué se trata</h2>
+<p>La TRM es el precio oficial del dólar en Colombia. Queremos ver si con datos de otros mercados
+(petróleo, bitcoin, índice del dólar, bolsa de EE. UU., miedo del mercado o VIX y otras monedas de la región)
+se puede saber cómo se va a mover la TRM y en qué "tipo de mercado" estamos cada día.</p>
+
+<h2>2. Datos</h2>
+<ul>
+  <li>2.159 días hábiles, del 7 de septiembre de 2017 al 17 de octubre de 2026.</li>
+  <li>Fuentes: TRM oficial (datos.gov.co) y precios diarios de Brent, VIX, DXY, S&amp;P 500, bono a 10 años de EE. UU.,
+      bitcoin, ethereum y las monedas de Brasil y México.</li>
+  <li>Con esos precios calculamos variables sencillas: cuánto cambió cada mercado en 5 días y qué tanto se movió
+      en los últimos 20 días (volatilidad).</li>
+</ul>
+
+<h2>3. Lo que ya estaba hecho</h2>
+<h3>3.1 Predecir si la TRM sube o baja mañana</h3>
+<p>Probamos regresión logística, KNN, SVM y random forest. Ninguno le gana al azar: el AUC queda cerca de 0,50.
+La conclusión es que el movimiento del día siguiente casi no se puede adivinar con estos datos. Es un resultado
+esperado en mercados de divisas, y por eso cambiamos el enfoque hacia agrupar días parecidos.</p>
+
+<h3>3.2 K-Means: agrupar días parecidos</h3>
+<p>Usamos 9 variables (volatilidad y cambios de 5 días de la TRM, VIX, dólar global, petróleo, bitcoin y S&amp;P 500).
+Con el método del codo el número de grupos que mejor equilibra simplicidad y detalle es <b>k = 4</b>.</p>
+<figure><img src="../../reports/figures/codo_kmeans.png" style="width:70%;display:block;margin:auto">
+<figcaption>Método del codo: la curva se dobla en k = 4.</figcaption></figure>
+
+<table>
+  <tr><th>Grupo</th><th>Qué pasa en esos días</th><th class="n">Días</th><th class="n">% del total</th></tr>
+  <tr><td>Calma</td><td>Poco movimiento en la TRM y en los demás mercados.</td><td class="n">752</td><td class="n">34,8 %</td></tr>
+  <tr><td>Apetito por riesgo</td><td>Los inversionistas compran activos de riesgo; el peso se fortalece.</td><td class="n">754</td><td class="n">34,9 %</td></tr>
+  <tr><td>Aversión al riesgo</td><td>Los inversionistas buscan refugio en el dólar; la TRM sube.</td><td class="n">606</td><td class="n">28,1 %</td></tr>
+  <tr><td>Crisis</td><td>Movimientos muy fuertes (por ejemplo, marzo de 2020).</td><td class="n">47</td><td class="n">2,2 %</td></tr>
+</table>
+
+<h3>3.3 Revisión del K-Means por fases</h3>
+<p>Seguimos la guía del profesor en 6 fases: análisis de los datos, inicio con k-means++, estabilidad de los grupos
+con distintas semillas, relación con variables que no se usaron para agrupar y una acción sugerida para cada grupo.
+El detalle está en <code>docs/kmeans/TRM_Predict_KMeans_Fases.pdf</code>.</p>
+
+<h2>4. Nuevo en este avance: reglas con un árbol de decisión</h2>
+<div class="nuevo">El K-Means dice a qué grupo pertenece cada día, pero no explica por qué. Para responder eso entrenamos
+un árbol de decisión pequeño que aprende a reconocer el grupo de cada día. El resultado son reglas que cualquiera
+puede leer.</div>
+
+<h3>Cómo se hizo</h3>
+<ol>
+  <li>Tomamos los 2.159 días con el grupo que les dio el K-Means.</li>
+  <li>Separamos los días al azar: 75 % para entrenar el árbol y 25 % para probarlo, con la misma proporción de cada grupo.</li>
+  <li>Dejamos el árbol en 3 niveles para que las reglas sean cortas.</li>
+  <li>Código: <code>src/pipeline/tree_rules.py</code>.</li>
+</ol>
+
+<figure><img src="../../reports/figures/arbol_reglas.png">
+<figcaption>Árbol de decisión. Cada caja es una pregunta: si se cumple se va a la izquierda (True), si no a la derecha (False). Las de abajo dicen el grupo; el porcentaje es la parte de los días que llega a esa caja.</figcaption></figure>
+
+<h3>Resultados</h3>
+<ul>
+  <li><b>Acierto en los días de prueba: 74 %</b> (540 días). Si se adivinara al azar sería alrededor del 25 %.</li>
+  <li>Las variables que más pesan son el <b>cambio de la TRM en 5 días (37 %)</b> y la <b>volatilidad de la TRM en 20 días (34 %)</b>.
+      Le siguen el VIX (14 %), la volatilidad de bitcoin (8 %) y la del petróleo (7 %).</li>
+  <li>El dólar global, el S&amp;P 500 y los cambios de petróleo y bitcoin no se usaron en ninguna regla.</li>
+</ul>
+
+<h3>Las reglas en palabras</h3>
+<table>
+  <tr><th>Si...</th><th>Entonces el día es...</th></tr>
+  <tr><td>La TRM se ha movido poco (volatilidad ≤ 0,6 %), el petróleo también está tranquilo y el VIX no subió mucho</td><td>Calma</td></tr>
+  <tr><td>La TRM se ha movido bastante pero no subió en la última semana y bitcoin está tranquilo</td><td>Apetito por riesgo</td></tr>
+  <tr><td>La TRM se ha movido bastante, subió en la semana y el VIX (miedo del mercado) no bajó</td><td>Aversión al riesgo</td></tr>
+</table>
+
+<h3>Errores del árbol (matriz de confusión, días de prueba)</h3>
+<table>
+  <tr><th>Grupo real \ Árbol dice</th><th class="n">Calma</th><th class="n">Apetito</th><th class="n">Aversión</th><th class="n">Crisis</th></tr>
+  <tr><td>Calma</td><td class="n"><b>152</b></td><td class="n">15</td><td class="n">21</td><td class="n">0</td></tr>
+  <tr><td>Apetito por riesgo</td><td class="n">29</td><td class="n"><b>154</b></td><td class="n">6</td><td class="n">0</td></tr>
+  <tr><td>Aversión al riesgo</td><td class="n">36</td><td class="n">22</td><td class="n"><b>93</b></td><td class="n">0</td></tr>
+  <tr><td>Crisis</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n"><b>0</b></td></tr>
+</table>
+<div class="nota"><b>Limitación:</b> el árbol nunca reconoce el grupo Crisis, porque solo hay 47 días de crisis (2 %)
+y con 3 niveles no alcanza a separarlos. Para el siguiente avance se puede probar darle más peso a ese grupo
+o dejar un nivel más.</div>
+
+<h2>5. Conclusiones</h2>
+<ul>
+  <li>Adivinar si la TRM sube o baja mañana no funciona mejor que lanzar una moneda.</li>
+  <li>Sí se pueden encontrar 4 tipos de mercado, y un árbol sencillo los explica con 74 % de acierto usando
+      sobre todo lo que ha hecho la propia TRM y el VIX.</li>
+  <li>Estas reglas sirven para mostrarle al usuario del tablero en qué tipo de mercado estamos hoy sin explicar el K-Means.</li>
+</ul>
+
+<h2>6. Siguientes pasos</h2>
+<ul>
+  <li>Mejorar la detección de días de Crisis.</li>
+  <li>Mostrar el grupo del día y su regla en el tablero web.</li>
+</ul>
+</body></html>
