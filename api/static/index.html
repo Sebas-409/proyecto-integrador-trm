@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TRM Predict</title>
+<title>TRM Predict · Importadores de iPhone</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root { --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#5b6472; --line:#e3e6eb; --up:#c0392b; --down:#1e8449; --accent:#1f4e8c; --wait:#b9770e; }
@@ -25,7 +25,7 @@
   td { padding:6px 0; border-bottom:1px solid var(--line); }
   td:last-child { text-align:right; font-variant-numeric: tabular-nums; }
   label { font-size:13px; color:var(--muted); display:block; margin:8px 0 4px; }
-  input { width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:14px; }
+  input, select { width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:14px; }
   button { margin-top:12px; padding:9px 14px; border:0; border-radius:6px; background:var(--accent); color:#fff; font-size:14px; cursor:pointer; }
   small { color:var(--muted); }
   #chat-log { display:flex; flex-direction:column; gap:8px; margin:12px 0; max-height:420px; overflow-y:auto; }
@@ -53,16 +53,34 @@
   .sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin:12px 0; }
   .sum div { background:var(--bg); border-radius:8px; padding:10px 12px; }
   .sum span { display:block; font-size:12px; color:var(--muted); }
+  .section-title { grid-column: span 12; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:8px 0 -4px; }
   .sum strong { font-size:18px; font-variant-numeric:tabular-nums; }
   @media (max-width: 800px) { .kpi { grid-column: span 6; } .chart, .side { grid-column: span 12; } main, header { padding-left:16px; padding-right:16px; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>TRM Predict: pronóstico del dólar en Colombia</h1>
-  <p>Probabilidad de que la TRM suba en el siguiente día hábil. Sistema académico de apoyo a decisiones; no es una recomendación de inversión.</p>
+  <h1>TRM Predict: analítica predictiva en la nube para anticipar el riesgo cambiario de los importadores de iPhone en Colombia</h1>
+  <p>¿Cuánto te cuesta en pesos un iPhone pagado en dólares hoy y cuánto mañana? El modelo pronostica la TRM del siguiente día hábil (no el precio del iPhone). Sistema académico de apoyo a decisiones; no es una recomendación de inversión.</p>
 </header>
 <main>
+  <div class="card full" id="importador">
+    <h2>¿Compro el iPhone hoy o espero a mañana?</h2>
+    <small>Elige el modelo de iPhone, revisa el precio en dólares y compara su costo en pesos con la TRM de hoy y la esperada para mañana. Precios en USD de la tienda de Apple en EE. UU. (consultados el 24-11-2026, verificar); peso, precio de venta, casillero, recargo e impuestos son <b>valores de ejemplo por verificar</b> (archivo <code>api/iphone_config.json</code>); cámbialos por los tuyos.</small>
+    <form id="imp-form" class="grid-form">
+      <div><label for="i-modelo">Modelo de iPhone</label><select id="i-modelo"></select></div>
+      <div><label for="i-precio">Precio en EE. UU. (USD)</label><input id="i-precio" type="number" min="0.01" step="0.01" value="699" required></div>
+      <div><label for="i-peso">Peso con caja (kg)</label><input id="i-peso" type="number" min="0.01" step="0.01" value="0.5" required></div>
+      <div><label for="i-venta">Lo vendes en (COP)</label><input id="i-venta" type="number" min="1" step="any" value="3200000" required></div>
+      <div><label for="i-margen">Margen mínimo (%)</label><input id="i-margen" type="number" min="0" max="99" step="1" value="10"></div>
+      <div><label for="i-recargo">Recargo del banco (%)</label><input id="i-recargo" type="number" min="0" max="20" step="0.1" value="3"></div>
+      <div><label for="i-imp">Impuestos y otros (%)</label><input id="i-imp" type="number" min="0" max="100" step="0.1" value="0"></div>
+      <div><label>&nbsp;</label><button style="margin-top:0;width:100%">Calcular</button></div>
+    </form>
+    <div id="imp-out"></div>
+  </div>
+
+  <div class="section-title">Pronóstico de la TRM que usa la recomendación</div>
   <div class="card kpi"><div class="label">TRM oficial vigente</div><div class="value" id="k-trm">–</div><small id="k-date"></small></div>
   <div class="card kpi"><div class="label">Prob. de alza</div><div class="value" id="k-prob">–</div><small id="k-dir"></small></div>
   <div class="card kpi"><div class="label">TRM esperada</div><div class="value" id="k-exp">–</div><small id="k-ret"></small></div>
@@ -81,23 +99,9 @@
     <p id="sim-out"></p>
   </div>
 
-  <div class="card full" id="importador">
-    <h2>Importadores: ¿compro hoy o espero a mañana?</h2>
-    <small>Para quien trae mercancía de EE. UU. con casillero (USD 10 por kg, se cobra el kg completo) y la vende en pesos. Sin impuestos de importación por ahora.</small>
-    <form id="imp-form" class="grid-form">
-      <div><label for="i-precio">Precio en la tienda (USD)</label><input id="i-precio" type="number" min="0.01" step="0.01" value="800" required></div>
-      <div><label for="i-peso">Peso (kg)</label><input id="i-peso" type="number" min="0.01" step="0.01" value="0.5" required></div>
-      <div><label for="i-venta">Lo vendes en (COP)</label><input id="i-venta" type="number" min="1" step="any" value="3300000" required></div>
-      <div><label for="i-margen">Margen mínimo (%)</label><input id="i-margen" type="number" min="0" max="99" step="1" value="10"></div>
-      <div><label for="i-recargo">Recargo del banco (%)</label><input id="i-recargo" type="number" min="0" max="20" step="0.1" value="3"></div>
-      <div><label>&nbsp;</label><button style="margin-top:0;width:100%">Calcular</button></div>
-    </form>
-    <div id="imp-out"></div>
-  </div>
-
   <div class="card full" id="historial">
-    <h2>Historial de pedidos</h2>
-    <small>Registra lo que vendiste y cuándo lo pagaste en EE. UU. Mira tu margen real, cuánto te quitó o te dio la TRM entre la venta y el pago, y qué decía la señal ese día. Los pedidos se guardan solo en este navegador.</small>
+    <h2>Historial de pedidos de iPhone</h2>
+    <small>Registra los iPhone que vendiste y cuándo lo pagaste en EE. UU. Mira tu margen real, cuánto te quitó o te dio la TRM entre la venta y el pago, y qué decía la señal ese día. Los pedidos se guardan solo en este navegador.</small>
     <form id="h-form" class="grid-form">
       <div><label for="h-prod">Producto</label><input id="h-prod" maxlength="120" placeholder="iPhone 16 128 GB"></div>
       <div><label for="h-precio">Precio (USD)</label><input id="h-precio" type="number" min="0.01" step="0.01" required></div>
@@ -199,6 +203,16 @@ const LABEL = { comprar_hoy: "Compra hoy", esperar: "Espera a mañana", no_viabl
 const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const val = id => document.getElementById(id).value;
 const params = () => ({ margen_min_pct: +val("i-margen") || 0, recargo_banco_pct: +val("i-recargo") || 0 });
+let IPH = null;
+async function loadIphone() {
+  IPH = await j("/api/iphone/config");
+  const sel = document.getElementById("i-modelo");
+  sel.innerHTML = IPH.modelos.map((m, i) => `<option value="${i}">${esc(m.nombre)} (ejemplo)</option>`).join("") + '<option value="">Otro</option>';
+  const set = (id, v) => { document.getElementById(id).value = v; };
+  const fill = () => { const m = IPH.modelos[sel.value]; if (!m) return; set("i-precio", m.precio_usd); set("i-peso", m.peso_kg); set("i-venta", m.venta_cop); };
+  sel.onchange = fill; fill();
+  set("i-margen", IPH.margen_min_pct.valor); set("i-recargo", IPH.recargo_banco_pct.valor); set("i-imp", IPH.impuestos_y_otros_pct.valor);
+}
 async function jpost(url, body) {
   const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const d = await r.json().catch(() => ({}));
@@ -211,17 +225,18 @@ document.getElementById("imp-form").onsubmit = async (ev) => {
   const out = document.getElementById("imp-out");
   try {
     const d = await jpost("/api/importador/decision",
-      { precio_usd: +val("i-precio"), peso_kg: +val("i-peso"), venta_cop: +val("i-venta"), ...params() });
+      { modelo: (IPH && IPH.modelos[val("i-modelo")] || {}).nombre || "", precio_usd: +val("i-precio"), peso_kg: +val("i-peso"),
+        venta_cop: +val("i-venta"), impuestos_pct: +val("i-imp") || 0, ...params() });
     const r = d.manana_rango;
     out.innerHTML = `
       <div class="verdict ${d.decision}"><b>${LABEL[d.decision]}</b>${esc(d.explicacion)}</div>
       <div class="wide"><table style="margin-top:12px">
-        <tr><th></th><th>TRM</th><th>Costo puesto en Colombia</th><th>Margen</th><th>Margen %</th></tr>
+        <tr><th>${esc(d.modelo || "iPhone")}</th><th>TRM</th><th>Costo en COP puesto en Colombia</th><th>Margen</th><th>Margen %</th></tr>
         <tr><td>Hoy (TRM del ${d.base_date})</td><td>${fmt(d.hoy.trm)}</td><td>${cop(d.hoy.costo_cop)}</td><td>${cop(d.hoy.margen_cop)}</td><td>${fmt(d.hoy.margen_pct,1)} %</td></tr>
         <tr><td>Mañana, esperado</td><td>${fmt(d.manana.trm)}</td><td>${cop(d.manana.costo_cop)}</td><td>${cop(d.manana.margen_cop)}</td><td>${fmt(d.manana.margen_pct,1)} %</td></tr>
         <tr><td><small>Mañana, rango por error del modelo</small></td><td><small>${fmt(r.optimista.trm)} – ${fmt(r.pesimista.trm)}</small></td><td><small>${cop(r.optimista.costo_cop)} – ${cop(r.pesimista.costo_cop)}</small></td><td></td><td></td></tr>
       </table></div>
-      <p><small>USD ${fmt(d.usd_total)} = producto + casillero USD ${fmt(d.casillero_usd,0)} (${d.kg_cobrados} kg cobrados) · Probabilidad de baja: ${fmt(d.prob_baja*100,0)} % · Régimen: ${esc(d.regimen || "sin dato")}.
+      <p><small>USD ${fmt(d.usd_total)} = iPhone + casillero USD ${fmt(d.casillero_usd,0)} (${d.kg_cobrados} kg cobrados) · Impuestos y otros: ${fmt(d.impuestos_pct,1)} % (ejemplo, verificar) · Probabilidad de baja: ${fmt(d.prob_baja*100,0)} % · Régimen: ${esc(d.regimen || "sin dato")}.
       Regla probada entre ${d.regla.periodo_prueba[0]} y ${d.regla.periodo_prueba[1]}: cuando dijo «espera» acertó el ${fmt(d.regla.acierto_al_esperar*100,0)} % de las veces.
       Con tarjeta, el banco liquida 1 a 3 días después de la compra.</small></p>`;
   } catch (e) { out.innerHTML = `<p class="up">${esc(e.message)}</p>`; }
@@ -277,6 +292,7 @@ async function renderHistorial() {
 }
 renderHistorial();
 
+loadIphone().catch(e => { document.getElementById("imp-out").innerHTML = `<p class="up">No se pudo cargar la configuración del iPhone: ${esc(e.message)}</p>`; });
 load().catch(e => { document.querySelector("header p").textContent = "Error cargando datos: " + e.message; });
 </script>
 </body>

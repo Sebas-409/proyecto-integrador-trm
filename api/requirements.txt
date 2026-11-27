@@ -6,4 +6,5 @@ scikit-learn==1.9.1
 joblib==1.6.0
 boto3>=1.35
 pg8000==1.31.5
+scramp==1.4.6  # scramp 1.5 quitó make_channel_binding y rompe pg8000 1.31.5
 anthropic==2.3.0

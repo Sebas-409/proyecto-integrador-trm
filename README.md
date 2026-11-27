@@ -1,11 +1,13 @@
-# TRM Predict: analítica predictiva en la nube para el riesgo cambiario en Colombia
+# TRM Predict: analítica predictiva en la nube para anticipar el riesgo cambiario de los importadores de iPhone en Colombia
 
 Proyecto integrador de V semestre (Minería de Datos, Machine Learning y Cloud Computing).
 **ODS 8** (trabajo decente y crecimiento económico, meta 8.10) y **ODS 10** (reducción de desigualdades, meta 10.c, remesas).
 
 El sistema pronostica, para el siguiente día hábil, la **dirección** de la TRM (COP/USD), su **valor esperado**
-y la **probabilidad de un movimiento fuerte**. Así, hogares que reciben remesas y mipymes importadoras pueden
-decidir cuándo monetizar o comprar dólares, o cuándo cubrirse.
+y la **probabilidad de un movimiento fuerte**. El usuario principal es el **importador de iPhone**: compra el
+equipo en dólares en EE. UU., lo trae con casillero y lo vende en pesos. La página le muestra, para el modelo de
+iPhone que elija, el precio en USD, el costo en COP con la TRM de hoy frente a la esperada para mañana y la
+recomendación de **comprar hoy o esperar**. El modelo predice la TRM, no el precio del iPhone.
 
 ![Arquitectura](docs/arquitectura.png)
 
@@ -76,15 +78,17 @@ Al terminar cada sesión: `terraform destroy` (ver `docs/costos.md`).
 | POST | `/api/scenario` | Qué pasaría si: `{"shocks": {"brent_ret_1": -0.03}}` |
 | GET | `/api/history?days=180` | Serie de la TRM |
 | GET | `/api/model` | Modelos elegidos, métricas de prueba y top SHAP |
-| POST | `/api/importador/decision` | ¿Compro hoy, espero a mañana o no es viable? `{"precio_usd": 800, "peso_kg": 0.5, "venta_cop": 3300000}` |
+| GET | `/api/iphone/config` | Modelos de iPhone y parámetros de costo de ejemplo (`api/iphone_config.json`) |
+| POST | `/api/importador/decision` | ¿Compro el iPhone hoy, espero a mañana o no es viable? `{"modelo": "iPhone 17 256 GB", "precio_usd": 929, "peso_kg": 0.5, "venta_cop": 4250000, "impuestos_pct": 0}` |
 | POST | `/api/importador/historial` | Margen real, efecto de la TRM y de la señal sobre los pedidos del importador |
 | GET | `/` | Tablero web |
 
-## Importadores (EE. UU. → Colombia)
+## Importadores de iPhone (EE. UU. → Colombia)
 
-Para quien compra mercancía en EE. UU., la trae con casillero (USD 10 por kg, se cobra el kg completo) y la vende en pesos. Por ahora no se incluyen impuestos de importación.
+Para quien compra iPhone en EE. UU., los trae con casillero y los vende en pesos. Es el módulo principal de la página.
 
-- **Costo puesto en Colombia** = (precio + 10 × kg redondeados hacia arriba) × TRM × (1 + recargo del banco).
+- **Parámetros** en `api/iphone_config.json`: modelos de iPhone con precio en USD, peso y precio de venta, tarifa del casillero por kg, recargo del banco, impuestos y otros cargos (%) y margen mínimo. Los precios en USD son los de apple.com (EE. UU., configuración base, sin impuesto de ventas) consultados el 2026-11-24 y deben verificarse. **El resto son valores de ejemplo, marcados "ejemplo, verificar"**: no son tarifas ni normas oficiales. El porcentaje de impuestos viene en 0 % para que cada importador ponga el que le aplique.
+- **Costo puesto en Colombia** = (precio + casillero × kg redondeados hacia arriba) × TRM × (1 + recargo del banco) × (1 + impuestos y otros).
 - **Regla**: esperar a mañana si P(baja) ≥ 55 % y el régimen K-Means no es Crisis. Si no, comprar hoy. Si el margen no llega al mínimo ni con la TRM optimista de mañana, el pedido no es viable.
 - **Validación** (`python -m src.pipeline.evaluate_importador` → `reports/importador_eval.json`): en el periodo de prueba (2024-12 a 2026-10), cuando la regla dijo "espera" acertó el 63 % de las veces y ahorró en promedio COP 9.900 por cada USD 1.000. Esperar al azar dio COP 1.383 por día y la regla COP 2.315 por cada USD 1.000. El periodo fue de peso apreciándose, así que esperar al azar también ganaba.
 - El régimen del día se calcula en la API con `api/regimes.json` (`python -m src.pipeline.regime_export`, el mismo K-Means de `elbow.py`).

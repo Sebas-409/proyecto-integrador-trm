@@ -32,7 +32,8 @@ MARKETS = list(YAHOO_SYMBOLS) + list(BINANCE_SYMBOLS)
 CACHE_SECONDS = 600
 
 app = FastAPI(title="TRM Predict API", version="1.0.0",
-              description="Pronóstico de la dirección y el valor de la TRM (COP/USD) del siguiente día hábil.")
+              description="Analítica predictiva en la nube para anticipar el riesgo cambiario de los importadores de "
+                          "iPhone en Colombia: dirección y valor de la TRM (COP/USD) del siguiente día hábil.")
 _state = {"bundle": None, "features": None, "loaded_at": 0.0}
 
 
@@ -158,10 +159,12 @@ def model_info():
     return bundle["meta"]
 
 
-# ---------------- Importadores: ¿compro hoy o mañana? ----------------
-# Para quien trae mercancía de EE. UU. con casillero y la vende en pesos. Sin impuestos por ahora.
+# ---------------- Importadores de iPhone: ¿compro hoy o mañana? ----------------
+# Para quien trae iPhone de EE. UU. con casillero y los vende en pesos. Los parámetros (modelos, precios,
+# casillero, recargo, impuestos) son de ejemplo y viven en api/iphone_config.json.
 
-CASILLERO_USD_KG = 10.0  # tarifa fija por kg; se cobra el kg completo (0,3 kg = 1 kg)
+IPHONE = json.loads((Path(__file__).parent / "iphone_config.json").read_text(encoding="utf-8"))
+CASILLERO_USD_KG = float(IPHONE["casillero"]["usd_por_kg"])  # se cobra el kg completo (0,3 kg = 1 kg)
 REGIMES = json.loads((Path(__file__).parent / "regimes.json").read_text(encoding="utf-8"))
 REGLA = json.loads((Path(__file__).parent / "importador_regla.json").read_text(encoding="utf-8"))
 
@@ -238,12 +241,20 @@ def decide(usd: float, venta_cop: float, margen_min: float, recargo: float,
             "venta_minima_cop": venta_min, "regimen": regimen}
 
 
+@app.get("/api/iphone/config")
+def iphone_config():
+    """Modelos de iPhone y parámetros de costo de ejemplo (verificar antes de usar)."""
+    return IPHONE
+
+
 class Compra(BaseModel):
-    precio_usd: float = Field(gt=0, le=100_000, description="Precio del producto en la tienda de EE. UU.")
+    modelo: str = Field("", max_length=120, description="Modelo de iPhone (solo informativo)")
+    precio_usd: float = Field(gt=0, le=100_000, description="Precio del iPhone en la tienda de EE. UU.")
     peso_kg: float = Field(gt=0, le=500)
     venta_cop: float = Field(gt=0, description="Precio al que lo vendes en Colombia")
     margen_min_pct: float = Field(10, ge=0, lt=100)
     recargo_banco_pct: float = Field(3, ge=0, le=20, description="Lo que el banco cobra sobre la TRM oficial")
+    impuestos_pct: float = Field(0, ge=0, le=100, description="Impuestos y otros cargos sobre el costo en COP (ejemplo, verificar)")
 
 
 @app.post("/api/importador/decision")
@@ -253,9 +264,12 @@ def importador_decision(c: Compra):
     p = predict_row(row, bundle)
     usd, kg = usd_total(c.precio_usd, c.peso_kg)
     mae = bundle["meta"]["test_metrics"]["regressor"]["test_mae"]
-    d = decide(usd, c.venta_cop, c.margen_min_pct / 100, c.recargo_banco_pct / 100,
+    # Impuestos y recargo escalan igual con la TRM: se combinan en un solo factor y la regla no cambia
+    cargo = (1 + c.recargo_banco_pct / 100) * (1 + c.impuestos_pct / 100) - 1
+    d = decide(usd, c.venta_cop, c.margen_min_pct / 100, cargo,
                p["trm_base"], p["trm_expected"], mae, p["prob_up"], regime_of(row.iloc[0]))
-    return {**d, "regla": REGLA, "usd_total": usd, "kg_cobrados": kg, "casillero_usd": CASILLERO_USD_KG * kg,
+    return {**d, "regla": REGLA, "modelo": c.modelo, "usd_total": usd, "kg_cobrados": kg,
+            "casillero_usd": CASILLERO_USD_KG * kg, "impuestos_pct": c.impuestos_pct,
             "base_date": p["base_date"], "prob_up": p["prob_up"]}
 
 
@@ -358,7 +372,10 @@ CHAT_LIMIT_PER_HOUR = 30  # por IP y por instancia: la clave paga cada pregunta
 _chat = {"client": None, "hits": {}}
 
 CHAT_SYSTEM = """Eres el asistente de TRM Predict, un proyecto académico de la Universidad Santo Tomás Tunja \
-que pronostica la TRM (tasa representativa del mercado COP/USD) del siguiente día hábil.
+que pronostica la TRM (tasa representativa del mercado COP/USD) del siguiente día hábil para anticipar el \
+riesgo cambiario de los importadores de iPhone en Colombia: cuánto cuesta en pesos un iPhone comprado en \
+dólares hoy frente a mañana y si conviene comprar hoy o esperar. El modelo predice la TRM, no el precio del \
+iPhone; los precios, el casillero, el recargo y los impuestos de la página son valores de ejemplo por verificar.
 
 Responde en español, claro y breve (máximo 3 párrafos cortos), en texto plano: la página no interpreta \
 Markdown, así que no uses asteriscos, almohadillas ni tablas. Usa solo los datos del contexto que te dan; \

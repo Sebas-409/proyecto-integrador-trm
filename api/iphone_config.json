@@ -1,0 +1,24 @@
+{
+  "_nota": "Parámetros del módulo del importador de iPhone. Los precios en USD son los de la tienda de Apple en EE. UU. (apple.com/shop/buy-iphone, configuración base, sin impuesto de ventas del estado), consultados el 2026-11-24: verificar antes de usar porque cambian. El peso, el precio de venta en COP, el casillero, el recargo del banco y los impuestos son valores de ejemplo (\"ejemplo, verificar\"), no tarifas ni normas oficiales.",
+  "fuente_precios": {"url": "https://www.apple.com/shop/buy-iphone", "consultado": "2026-11-24"},
+  "modelos": [
+    {"nombre": "iPhone 17e 256 GB", "precio_usd": 699, "peso_kg": 0.5, "venta_cop": 3200000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"},
+    {"nombre": "iPhone 16 128 GB", "precio_usd": 829, "peso_kg": 0.5, "venta_cop": 3800000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"},
+    {"nombre": "iPhone 17 256 GB", "precio_usd": 929, "peso_kg": 0.5, "venta_cop": 4250000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"},
+    {"nombre": "iPhone Air 256 GB", "precio_usd": 1099, "peso_kg": 0.5, "venta_cop": 5000000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"},
+    {"nombre": "iPhone 18 Pro 256 GB", "precio_usd": 1199, "peso_kg": 0.5, "venta_cop": 5450000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"},
+    {"nombre": "iPhone 18 Pro Max 256 GB", "precio_usd": 1299, "peso_kg": 0.5, "venta_cop": 5900000, "estado": "precio apple.com 2026-11-24, verificar; peso y venta: ejemplo, verificar"}
+  ],
+  "casillero": {
+    "usd_por_kg": 10.0,
+    "cobra_kg_completo": true,
+    "estado": "ejemplo, verificar"
+  },
+  "recargo_banco_pct": {"valor": 3.0, "estado": "ejemplo, verificar"},
+  "impuestos_y_otros_pct": {
+    "valor": 0.0,
+    "estado": "ejemplo, verificar",
+    "nota": "Porcentaje sobre el costo en COP para aranceles, IVA, impuesto de ventas en EE. UU. u otros cargos. El proyecto no fija ninguna tarifa: déjelo en 0 o ponga el valor que aplique según la norma vigente."
+  },
+  "margen_min_pct": {"valor": 10.0, "estado": "ejemplo, verificar"}
+}
